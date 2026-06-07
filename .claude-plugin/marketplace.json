@@ -1,0 +1,17 @@
+{
+  "name": "imaginepdf",
+  "owner": {
+    "name": "ImaginePDF"
+  },
+  "metadata": {
+    "description": "ImaginePDF — design and generate professional PDFs from Claude Code."
+  },
+  "plugins": [
+    {
+      "name": "imaginepdf",
+      "source": "./",
+      "version": "0.0.1",
+      "description": "Create PDFs with ImaginePDF: author designs and render them to downloadable PDFs."
+    }
+  ]
+}
