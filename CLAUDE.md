@@ -5,31 +5,33 @@ Open-source Claude Code plugin that lets Claude design + generate PDFs
 session via the ImaginePDF public API.
 
 **Brand:** user-facing copy is **ImaginePDF**. The plugin's manifest `name` is
-`imaginepdf` — it is the slash namespace, e.g. the entry skill is
-`/imaginepdf:create`. `displayName` is "ImaginePDF".
+`imaginepdf` — it is the slash namespace. There are exactly two skills:
+`/imaginepdf:design` (author/edit a layout) and `/imaginepdf:generate` (render a
+PDF, single or batch). `displayName` is "ImaginePDF". Keep it to these two —
+extra skills trigger repeated permission prompts.
 
 **Open source:** this repo is public. Do NOT bundle the proprietary `pdftreejs`
-package here. The plugin only carries hand-written schema reference docs (under
-`skills/design-authoring/reference/`) so Claude can emit correct op payloads;
-the server owns `pdftreejs` and applies the ops.
+package here. The plugin only carries hand-written schema/design reference docs
+(under `skills/design/reference/`) so Claude can emit correct op payloads and
+tasteful layouts; the server owns `pdftreejs` and applies the ops.
 
 ## Layout
 
 ```
 claude-imaginepdf/
 ├── .claude-plugin/
-│   ├── plugin.json            # manifest (+ userConfig: api_key, api_base_url)
+│   ├── plugin.json            # manifest (+ userConfig: api_key only)
 │   └── marketplace.json       # GitHub marketplace catalog (this repo)
 ├── src/
-│   ├── design.ts              # create / get / list / patch designs (/api/v1)
-│   ├── generate.ts            # render a PDF (/api/v1/generate)
+│   ├── design.ts              # tools/create/get/list/patch + preview/placeholder/upload
+│   ├── generate.ts            # render a PDF + batch (generate/batch/batch-status/batch-download)
 │   └── lib/
-│       ├── auth.ts            # resolve API key + base URL (userConfig → env)
-│       └── api-client.ts      # X-API-Key HTTP client (get/post/patch)
+│       ├── auth.ts            # resolve API key (userConfig → env); base URL via env fallback
+│       └── api-client.ts      # X-API-Key HTTP client (get/post/patch/postForm/putForm/download)
 ├── skills/
-│   ├── create/                # entry/orchestrator skill (/imaginepdf:create)
-│   ├── design-authoring/      # op-based authoring + reference/{tree-ops,elements}.md
-│   └── pdf-generation/        # render + dynamic field values
+│   ├── design/                # author/edit layout (/imaginepdf:design)
+│   │   └── reference/         # README (tool conventions), design-system.md, gallery/*.json
+│   └── generate/              # render + dynamic field values, single + batch
 ├── commands/index.md          # /imaginepdf launcher
 ├── build/build.js             # esbuild → scripts/{design,generate}.cjs
 ├── scripts/                   # built CLIs (committed for distribution)
@@ -54,21 +56,28 @@ the versioned, API-key-only public surface:
   (each takes an array); singular: `add_page`, `set_page_background`,
   `set_document_background`, `set_metadata`
 - `GET   /api/v1/tools` — the authoring tool catalog (names + input shapes)
+- `GET   /api/v1/preview?design=:id&page=0` — render a page to a PNG (no credit)
+- `POST  /api/v1/assets` — upload an image asset (multipart)
+- `POST  /api/v1/assets/placeholder` — mint a labeled placeholder asset
+- `PUT   /api/v1/assets/:id/content` — replace an asset's bytes in place (ref unchanged)
 - `POST  /api/v1/generate?design=:id` — render a PDF, returns a presigned URL
+- `POST  /api/v1/batch/generate?design=:id` — one PDF per dataset row (plan-gated)
+- `GET   /api/v1/batch/:jobId/{status,download}` — poll + fetch the zip
 
 The authoring tools are defined and executed server-side by the ImaginePDF API
-(the authority); the plugin is a thin caller. Authoring is free; only generation
-costs a credit.
+(the authority); the plugin is a thin caller. Authoring, preview, and asset
+upload are free; only generation (single and per batch row) costs a credit.
 
 ## Config
 
 Uses Claude Code plugin `userConfig` (set via `/plugin`):
-- `api_key` (sensitive → OS keychain) — workspace key `pc_live_…`.
-- `api_base_url` — defaults to production; `http://localhost:3100` for dev.
+- `api_key` (sensitive → OS keychain) — workspace key `pc_live_…`. The only
+  config field a user sees.
 
-`auth.ts` reads `CLAUDE_PLUGIN_OPTION_API_KEY` / `CLAUDE_PLUGIN_OPTION_API_BASE_URL`
-first, then falls back to `IMAGINEPDF_API_KEY` / `IMAGINEPDF_API_URL` for local
-dev. The default base URL is `https://api.imaginepdf.com`.
+`auth.ts` reads `CLAUDE_PLUGIN_OPTION_API_KEY` first, then falls back to
+`IMAGINEPDF_API_KEY` for local dev. The base URL is NOT a user-facing config —
+it defaults to `https://api.imaginepdf.com`; for local dev export
+`IMAGINEPDF_API_URL=http://localhost:3100`.
 
 ## Distribution
 

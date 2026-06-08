@@ -1,0 +1,57 @@
+{
+  "_note": "Exemplar: one-page report / summary, Mono/Slate palette. Header band, a row of stat cards (panel rectangles with a big number + label), a section header, body, and a data table. Adapt copy/variables; preview and revise.",
+  "name": "Report",
+  "tools": [
+    {
+      "tool": "add_elements",
+      "input": {
+        "elements": [
+          { "id": "band", "type": "shape", "position": { "x": 0, "y": 0, "w": 595.28, "h": 120 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#111827" } },
+          { "id": "eyebrow", "type": "text", "position": { "x": 50, "y": 38, "w": 400, "h": 14 }, "data": { "content": "QUARTERLY REVIEW" }, "styles": { "fontFamily": "google:inter", "fontSize": 10, "bold": true, "color": "#9CA3AF" } },
+          { "id": "title", "type": "text", "position": { "x": 50, "y": 54, "w": 460, "h": 34 }, "data": { "content": "Sales Performance — Q2 2026" }, "styles": { "fontFamily": "google:poppins", "fontSize": 24, "bold": true, "color": "#FFFFFF" } },
+
+          { "id": "card1", "type": "shape", "position": { "x": 50, "y": 150, "w": 152, "h": 78 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#F3F4F6", "borderRadius": 6 } },
+          { "id": "card1v", "type": "text", "position": { "x": 66, "y": 164, "w": 120, "h": 28 }, "data": { "content": "$1.2M" }, "styles": { "fontFamily": "google:poppins", "fontSize": 22, "bold": true, "color": "#111827" } },
+          { "id": "card1l", "type": "text", "position": { "x": 66, "y": 196, "w": 120, "h": 14 }, "data": { "content": "REVENUE" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "bold": true, "color": "#6B7280" } },
+
+          { "id": "card2", "type": "shape", "position": { "x": 222, "y": 150, "w": 152, "h": 78 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#F3F4F6", "borderRadius": 6 } },
+          { "id": "card2v", "type": "text", "position": { "x": 238, "y": 164, "w": 120, "h": 28 }, "data": { "content": "+18%" }, "styles": { "fontFamily": "google:poppins", "fontSize": 22, "bold": true, "color": "#111827" } },
+          { "id": "card2l", "type": "text", "position": { "x": 238, "y": 196, "w": 120, "h": 14 }, "data": { "content": "GROWTH" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "bold": true, "color": "#6B7280" } },
+
+          { "id": "card3", "type": "shape", "position": { "x": 394, "y": 150, "w": 151, "h": 78 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#F3F4F6", "borderRadius": 6 } },
+          { "id": "card3v", "type": "text", "position": { "x": 410, "y": 164, "w": 120, "h": 28 }, "data": { "content": "342" }, "styles": { "fontFamily": "google:poppins", "fontSize": 22, "bold": true, "color": "#111827" } },
+          { "id": "card3l", "type": "text", "position": { "x": 410, "y": 196, "w": 120, "h": 14 }, "data": { "content": "NEW CUSTOMERS" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "bold": true, "color": "#6B7280" } },
+
+          { "id": "secHeader", "type": "text", "position": { "x": 50, "y": 260, "w": 400, "h": 22 }, "data": { "content": "Top regions" }, "styles": { "fontFamily": "google:poppins", "fontSize": 16, "bold": true, "color": "#111827" } },
+          { "id": "secRule", "type": "shape", "position": { "x": 50, "y": 284, "w": 495, "h": 2 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#111827" } },
+          { "id": "regions", "type": "table", "position": { "x": 50, "y": 298, "w": 495, "h": 130 }, "data": { "rows": 4, "columns": 3, "template": "headerRow", "headerRow": true } }
+        ]
+      }
+    },
+    {
+      "tool": "update_elements",
+      "input": {
+        "updates": [
+          { "id": "regions", "data": { "cells": [
+            [ { "type": "text", "data": { "content": "Region" } }, { "type": "text", "data": { "content": "Revenue" } }, { "type": "text", "data": { "content": "Growth" } } ],
+            [ { "type": "text", "data": { "content": "North America" } }, { "type": "text", "data": { "content": "$620K" } }, { "type": "text", "data": { "content": "+22%" } } ],
+            [ { "type": "text", "data": { "content": "Europe" } }, { "type": "text", "data": { "content": "$410K" } }, { "type": "text", "data": { "content": "+14%" } } ],
+            [ { "type": "text", "data": { "content": "Asia-Pacific" } }, { "type": "text", "data": { "content": "$170K" } }, { "type": "text", "data": { "content": "+9%" } } ]
+          ] } }
+        ]
+      }
+    },
+    {
+      "tool": "bind_variables",
+      "input": {
+        "bindings": [
+          { "nodeId": "title", "field": "content", "type": "text", "name": "report_title" },
+          { "nodeId": "card1v", "field": "content", "type": "text", "name": "stat_revenue" },
+          { "nodeId": "card2v", "field": "content", "type": "text", "name": "stat_growth" },
+          { "nodeId": "card3v", "field": "content", "type": "text", "name": "stat_customers" },
+          { "nodeId": "regions", "field": "cells", "type": "table", "name": "regions_table" }
+        ]
+      }
+    }
+  ]
+}
