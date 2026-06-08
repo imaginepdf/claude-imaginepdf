@@ -14,5 +14,7 @@ Use $ARGUMENTS to understand what the user wants. Examples:
 
 If $ARGUMENTS is empty or unclear, ask the user what document they'd like to create.
 
-Follow the `create` skill: author the layout with `imaginepdf:design-authoring`,
-then render it with `imaginepdf:pdf-generation`, and return the download URL.
+Design the layout with `imaginepdf:design` (author elements, style it, preview
+and revise, bind any fillable fields), then produce the file with
+`imaginepdf:generate` — a single PDF, or one per row of a dataset — and return
+the download URL.

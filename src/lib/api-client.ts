@@ -6,6 +6,8 @@
  * Every response uses the canonical `{ status, data, error }` envelope.
  */
 
+import { writeFile } from 'node:fs/promises';
+
 interface ApiResponse<T> {
   data?: T;
   error?: { code: string; message: string };
@@ -29,6 +31,30 @@ async function request<T>(
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
 
+  return unwrap<T>(response);
+}
+
+/**
+ * Multipart request (file upload). Content-Type is intentionally NOT set —
+ * fetch derives it (with the boundary) from the FormData body.
+ */
+async function requestForm<T>(
+  apiKey: string,
+  apiUrl: string,
+  method: string,
+  path: string,
+  form: FormData,
+): Promise<T> {
+  const url = `${apiUrl}${path}`;
+  const response = await fetch(url, {
+    method,
+    headers: { 'X-API-Key': apiKey },
+    body: form,
+  });
+  return unwrap<T>(response);
+}
+
+async function unwrap<T>(response: Response): Promise<T> {
   let json: ApiResponse<T>;
   try {
     json = (await response.json()) as ApiResponse<T>;
@@ -44,11 +70,30 @@ async function request<T>(
   return json.data as T;
 }
 
+/**
+ * Download a (presigned, absolute) URL to a local file. No API key — the URL
+ * already carries its own signature. Used to pull a preview PNG so the agent
+ * can read it.
+ */
+async function download(url: string, destPath: string): Promise<void> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to download file: HTTP ${response.status} ${response.statusText}`);
+  }
+  const buf = Buffer.from(await response.arrayBuffer());
+  await writeFile(destPath, buf);
+}
+
 export function createApiClient(apiKey: string, apiUrl: string) {
   return {
     get: <T>(path: string) => request<T>(apiKey, apiUrl, 'GET', path),
     post: <T>(path: string, body?: unknown) => request<T>(apiKey, apiUrl, 'POST', path, body),
     patch: <T>(path: string, body?: unknown) => request<T>(apiKey, apiUrl, 'PATCH', path, body),
+    postForm: <T>(path: string, form: FormData) =>
+      requestForm<T>(apiKey, apiUrl, 'POST', path, form),
+    putForm: <T>(path: string, form: FormData) =>
+      requestForm<T>(apiKey, apiUrl, 'PUT', path, form),
+    download,
   };
 }
 

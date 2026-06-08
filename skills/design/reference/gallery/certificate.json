@@ -1,0 +1,36 @@
+{
+  "_note": "Exemplar: certificate of completion, Amber/Charcoal palette, landscape feel via a full-bleed border. Centered display title is appropriate HERE (ceremonial). Adapt copy/variables; preview and revise.",
+  "name": "Certificate",
+  "tools": [
+    { "tool": "set_page_background", "input": { "page": 0, "background": { "color": "#FAF7F2" } } },
+    {
+      "tool": "add_elements",
+      "input": {
+        "elements": [
+          { "id": "frame", "type": "shape", "position": { "x": 30, "y": 30, "w": 535.28, "h": 781.89 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#FFFFFF", "stroke": "#1C1917", "strokeWidth": 2, "borderRadius": 4 } },
+          { "id": "innerRule", "type": "shape", "position": { "x": 44, "y": 44, "w": 507.28, "h": 753.89 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#FFFFFF", "stroke": "#F59E0B", "strokeWidth": 1 } },
+          { "id": "eyebrow", "type": "text", "position": { "x": 80, "y": 150, "w": 435.28, "h": 18 }, "data": { "content": "CERTIFICATE OF COMPLETION" }, "styles": { "fontFamily": "google:inter", "fontSize": 12, "bold": true, "color": "#F59E0B", "textAlign": "center" } },
+          { "id": "title", "type": "text", "position": { "x": 80, "y": 250, "w": 435.28, "h": 40 }, "data": { "content": "Jane Smith" }, "styles": { "fontFamily": "google:source-serif-4", "fontSize": 34, "bold": true, "color": "#1C1917", "textAlign": "center" } },
+          { "id": "titleRule", "type": "shape", "position": { "x": 230, "y": 300, "w": 135, "h": 2 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#F59E0B" } },
+          { "id": "body", "type": "text", "position": { "x": 110, "y": 330, "w": 375.28, "h": 50 }, "data": { "content": "has successfully completed the Advanced Program in recognition of dedication and outstanding achievement." }, "styles": { "fontFamily": "google:inter", "fontSize": 13, "color": "#78716C", "textAlign": "center", "lineHeight": 1.5 } },
+          { "id": "dateLabel", "type": "text", "position": { "x": 110, "y": 660, "w": 160, "h": 14 }, "data": { "content": "DATE" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "bold": true, "color": "#78716C", "textAlign": "center" } },
+          { "id": "dateVal", "type": "text", "position": { "x": 110, "y": 676, "w": 160, "h": 18 }, "data": { "content": "7 June 2026" }, "styles": { "fontFamily": "google:inter", "fontSize": 13, "color": "#1C1917", "textAlign": "center" } },
+          { "id": "dateLine", "type": "shape", "position": { "x": 110, "y": 700, "w": 160, "h": 1 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#E7E2DA" } },
+          { "id": "sigVal", "type": "text", "position": { "x": 325, "y": 676, "w": 160, "h": 18 }, "data": { "content": "Dr. A. Director" }, "styles": { "fontFamily": "google:source-serif-4", "fontSize": 13, "italic": true, "color": "#1C1917", "textAlign": "center" } },
+          { "id": "sigLine", "type": "shape", "position": { "x": 325, "y": 700, "w": 160, "h": 1 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#E7E2DA" } },
+          { "id": "sigLabel", "type": "text", "position": { "x": 325, "y": 706, "w": 160, "h": 14 }, "data": { "content": "AUTHORISED SIGNATORY" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "bold": true, "color": "#78716C", "textAlign": "center" } }
+        ]
+      }
+    },
+    {
+      "tool": "bind_variables",
+      "input": {
+        "bindings": [
+          { "nodeId": "title", "field": "content", "type": "text", "name": "recipient_name" },
+          { "nodeId": "body", "field": "content", "type": "text", "name": "achievement" },
+          { "nodeId": "dateVal", "field": "content", "type": "text", "name": "date" }
+        ]
+      }
+    }
+  ]
+}

@@ -17,12 +17,6 @@
       "description": "Workspace key (pc_live_…) from the ImaginePDF dashboard → Settings → API Keys.",
       "sensitive": true,
       "required": true
-    },
-    "api_base_url": {
-      "type": "string",
-      "title": "API base URL",
-      "description": "Leave as the default for production. Use http://localhost:3100 for local development.",
-      "default": "https://api.imaginepdf.com"
     }
   }
 }

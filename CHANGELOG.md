@@ -4,6 +4,27 @@ All notable changes to the ImaginePDF plugin are documented here. The plugin
 follows [semantic versioning](https://semver.org); bump `version` in
 `.claude-plugin/plugin.json` on every release.
 
+## Unreleased
+
+- **Two skills only** — consolidated to `imaginepdf:design` (author/edit a
+  layout) and `imaginepdf:generate` (render — single or batch). Removes the
+  separate `create` / `design-authoring` / `pdf-generation` skills to cut
+  permission-prompt churn.
+- **Preview loop** — `design.cjs preview` renders a page to a PNG and saves it
+  locally so the agent can read it and revise the layout before generating.
+- **Placeholder assets** — `design.cjs placeholder` mints a labeled, renderable
+  placeholder image; `design.cjs upload` adds a real image or, with `assetId`,
+  swaps a placeholder's bytes **in place** (the `assets:<id>` ref is unchanged,
+  no rebind). A design generated before replacement renders the placeholder, not
+  a blank area.
+- **Batch generation** — `generate.cjs batch` / `batch-status` / `batch-download`
+  produce one PDF per dataset row (plan-gated).
+- **Design taste** — bundled `skills/design/reference/design-system.md` (palettes,
+  type pairings, spacing, composition patterns) and a `gallery/` of curated
+  example designs to start from.
+- **Config** — the API base URL is no longer a user-facing config field; only the
+  API key is asked for (`IMAGINEPDF_API_URL` still works for local dev).
+
 ## 0.0.1 — Initial release
 
 First public release of the ImaginePDF plugin for Claude Code.
