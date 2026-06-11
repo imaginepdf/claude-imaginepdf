@@ -1,53 +1,32 @@
 {
-  "_note": "Exemplar: compact payment receipt, Emerald palette. Narrow content column, a 'PAID' chip, a totals line. Adapt copy/variables; preview and revise.",
+  "_note": "Exemplar: compact payment receipt, Emerald palette. Narrow content column, a 'PAID' chip, a totals line. Text has NO w/h (maxWidth only where wrapped or right-aligned); the table is grid-driven via columnWidths. Bound elements carry the variable name as their element name. Adapt copy/variables; preview and revise.",
   "name": "Receipt",
-  "tools": [
-    {
-      "tool": "add_elements",
-      "input": {
-        "elements": [
-          { "id": "band", "type": "shape", "position": { "x": 0, "y": 0, "w": 595.28, "h": 96 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#0E3B2E" } },
-          { "id": "accentRule", "type": "shape", "position": { "x": 0, "y": 96, "w": 595.28, "h": 3 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#10B981" } },
-          { "id": "store", "type": "text", "position": { "x": 50, "y": 34, "w": 320, "h": 26 }, "data": { "content": "Greenleaf Coffee" }, "styles": { "fontFamily": "google:poppins", "fontSize": 20, "bold": true, "color": "#FFFFFF" } },
-          { "id": "addr", "type": "text", "position": { "x": 50, "y": 64, "w": 320, "h": 14 }, "data": { "content": "14 Garden Lane · (555) 010-2233" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "color": "#A7F3D0" } },
-          { "id": "rcptLabel", "type": "text", "position": { "x": 345, "y": 40, "w": 200, "h": 14 }, "data": { "content": "RECEIPT" }, "styles": { "fontFamily": "google:inter", "fontSize": 12, "bold": true, "color": "#FFFFFF", "textAlign": "right" } },
-          { "id": "rcptNo", "type": "text", "position": { "x": 345, "y": 60, "w": 200, "h": 14 }, "data": { "content": "# R-4821 · 7 Jun 2026" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "color": "#A7F3D0", "textAlign": "right" } },
+  "actions": [
+    { "type": "add_element", "args": { "type": "shape", "name": "band", "position": { "x": 0, "y": 0, "w": 595.28, "h": 96 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#0E3B2E" } } },
+    { "type": "add_element", "args": { "type": "shape", "name": "accent_rule", "position": { "x": 0, "y": 96, "w": 595.28, "h": 3 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#10B981" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "store", "position": { "x": 50, "y": 34 }, "data": { "content": "Greenleaf Coffee" }, "styles": { "fontFamily": "google:poppins", "fontSize": 20, "bold": true, "color": "#FFFFFF", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "store_address", "position": { "x": 50, "y": 64 }, "data": { "content": "14 Garden Lane · (555) 010-2233" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "color": "#A7F3D0", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "receipt_label", "position": { "x": 345, "y": 40, "maxWidth": 200 }, "data": { "content": "RECEIPT" }, "styles": { "fontFamily": "google:inter", "fontSize": 12, "bold": true, "color": "#FFFFFF", "textAlign": "right" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "receipt_meta", "position": { "x": 345, "y": 60, "maxWidth": 200 }, "data": { "content": "# R-4821 · 7 Jun 2026" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "color": "#A7F3D0", "textAlign": "right" } } },
 
-          { "id": "items", "type": "table", "position": { "x": 50, "y": 140, "w": 320, "h": 120 }, "data": { "rows": 4, "columns": 3, "template": "minimal" } },
+    { "type": "add_element", "args": { "type": "table", "name": "line_items", "position": { "x": 50, "y": 140 }, "data": { "rows": 4, "columns": 3, "columnWidths": [180, 50, 90], "template": "minimal", "cells": [
+      ["Item", "Qty", "Price"],
+      ["Flat white", "1", "$4.50"],
+      ["Almond croissant", "1", "$4.00"],
+      ["Sparkling water", "1", "$4.00"]
+    ] } } },
 
-          { "id": "totalRule", "type": "shape", "position": { "x": 50, "y": 300, "w": 320, "h": 1 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#D1FAE5" } },
-          { "id": "totalLabel", "type": "text", "position": { "x": 50, "y": 312, "w": 160, "h": 18 }, "data": { "content": "TOTAL" }, "styles": { "fontFamily": "google:inter", "fontSize": 12, "bold": true, "color": "#0B1B14" } },
-          { "id": "totalVal", "type": "text", "position": { "x": 210, "y": 310, "w": 160, "h": 20 }, "data": { "content": "$12.50" }, "styles": { "fontFamily": "google:poppins", "fontSize": 16, "bold": true, "color": "#0E3B2E", "textAlign": "right" } },
+    { "type": "add_element", "args": { "type": "shape", "name": "total_rule", "position": { "x": 50, "y": 300, "w": 320, "h": 1 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#D1FAE5" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "total_label", "position": { "x": 50, "y": 312 }, "data": { "content": "TOTAL" }, "styles": { "fontFamily": "google:inter", "fontSize": 12, "bold": true, "color": "#0B1B14", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "total", "position": { "x": 210, "y": 310, "maxWidth": 160 }, "data": { "content": "$12.50" }, "styles": { "fontFamily": "google:poppins", "fontSize": 16, "bold": true, "color": "#0E3B2E", "textAlign": "right" } } },
 
-          { "id": "paidChip", "type": "shape", "position": { "x": 50, "y": 350, "w": 92, "h": 26 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#ECFDF5", "stroke": "#10B981", "strokeWidth": 1, "borderRadius": 13 } },
-          { "id": "paidText", "type": "text", "position": { "x": 50, "y": 357, "w": 92, "h": 14 }, "data": { "content": "PAID" }, "styles": { "fontFamily": "google:inter", "fontSize": 10, "bold": true, "color": "#10B981", "textAlign": "center" } },
+    { "type": "add_element", "args": { "type": "shape", "name": "paid_chip", "position": { "x": 50, "y": 350, "w": 92, "h": 26 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#ECFDF5", "stroke": "#10B981", "strokeWidth": 1, "borderRadius": 13 } } },
+    { "type": "add_element", "args": { "type": "text", "name": "paid_text", "position": { "x": 50, "y": 357, "maxWidth": 92 }, "data": { "content": "PAID" }, "styles": { "fontFamily": "google:inter", "fontSize": 10, "bold": true, "color": "#10B981", "textAlign": "center" } } },
 
-          { "id": "footer", "type": "text", "position": { "x": 50, "y": 410, "w": 320, "h": 14 }, "data": { "content": "Thank you — see you again soon!" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "color": "#5B6B63" } }
-        ]
-      }
-    },
-    {
-      "tool": "update_elements",
-      "input": {
-        "updates": [
-          { "id": "items", "data": { "cells": [
-            [ { "type": "text", "data": { "content": "Item" } }, { "type": "text", "data": { "content": "Qty" } }, { "type": "text", "data": { "content": "Price" } } ],
-            [ { "type": "text", "data": { "content": "Flat white" } }, { "type": "text", "data": { "content": "1" } }, { "type": "text", "data": { "content": "$4.50" } } ],
-            [ { "type": "text", "data": { "content": "Almond croissant" } }, { "type": "text", "data": { "content": "1" } }, { "type": "text", "data": { "content": "$4.00" } } ],
-            [ { "type": "text", "data": { "content": "Sparkling water" } }, { "type": "text", "data": { "content": "1" } }, { "type": "text", "data": { "content": "$4.00" } } ]
-          ] } }
-        ]
-      }
-    },
-    {
-      "tool": "bind_variables",
-      "input": {
-        "bindings": [
-          { "nodeId": "rcptNo", "field": "content", "type": "text", "name": "receipt_meta" },
-          { "nodeId": "items", "field": "cells", "type": "table", "name": "line_items" },
-          { "nodeId": "totalVal", "field": "content", "type": "text", "name": "total" }
-        ]
-      }
-    }
+    { "type": "add_element", "args": { "type": "text", "name": "footer", "position": { "x": 50, "y": 410 }, "data": { "content": "Thank you — see you again soon!" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "color": "#5B6B63", "textAlign": "left" } } },
+
+    { "type": "bind_variable", "args": { "name": "receipt_meta" } },
+    { "type": "bind_variable", "args": { "name": "line_items" } },
+    { "type": "bind_variable", "args": { "name": "total" } }
   ]
 }

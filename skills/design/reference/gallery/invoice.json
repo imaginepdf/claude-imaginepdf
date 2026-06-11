@@ -1,64 +1,43 @@
 {
-  "_note": "Exemplar: modern invoice, Midnight palette. A `create` payload — pass to `design.cjs create`. Header band + accent rule, eyebrow/value meta blocks, a header-row table, a dark totals anchor, a hairline footer. Adapt copy, palette, and variables; then preview and revise.",
+  "_note": "Exemplar: modern invoice, Midnight palette. A `create` payload — pass to `design.cjs create`. Header band + accent rule, eyebrow/value meta blocks, a header-row table, a dark totals anchor, a hairline footer. Note the sizing contract: text has NO w/h (maxWidth only, set for wrapped + right-aligned blocks); the table is grid-driven via columnWidths. Elements that get bound carry the variable name as their element name. Adapt copy, palette, and variables; then preview and revise.",
   "name": "Invoice",
-  "tools": [
-    {
-      "tool": "add_elements",
-      "input": {
-        "elements": [
-          { "id": "band", "type": "shape", "position": { "x": 0, "y": 0, "w": 595.28, "h": 140 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#0B1220" } },
-          { "id": "accentRule", "type": "shape", "position": { "x": 0, "y": 140, "w": 595.28, "h": 4 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#3B82F6" } },
-          { "id": "company", "type": "text", "position": { "x": 50, "y": 44, "w": 340, "h": 30 }, "data": { "content": "Acme Tech Solutions" }, "styles": { "fontFamily": "google:poppins", "fontSize": 24, "bold": true, "color": "#FFFFFF" } },
-          { "id": "tagline", "type": "text", "position": { "x": 50, "y": 82, "w": 340, "h": 16 }, "data": { "content": "Design & Engineering" }, "styles": { "fontFamily": "google:inter", "fontSize": 10, "color": "#94A3B8" } },
-          { "id": "docType", "type": "text", "position": { "x": 345, "y": 48, "w": 200, "h": 28 }, "data": { "content": "INVOICE" }, "styles": { "fontFamily": "google:poppins", "fontSize": 24, "bold": true, "color": "#FFFFFF", "textAlign": "right" } },
-          { "id": "invNo", "type": "text", "position": { "x": 345, "y": 84, "w": 200, "h": 14 }, "data": { "content": "# INV-2026-001" }, "styles": { "fontFamily": "google:inter", "fontSize": 10, "color": "#93C5FD", "textAlign": "right" } },
+  "actions": [
+    { "type": "add_element", "args": { "type": "shape", "name": "band", "position": { "x": 0, "y": 0, "w": 595.28, "h": 140 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#0B1220" } } },
+    { "type": "add_element", "args": { "type": "shape", "name": "accent_rule", "position": { "x": 0, "y": 140, "w": 595.28, "h": 4 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#3B82F6" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "company", "position": { "x": 50, "y": 44 }, "data": { "content": "Acme Tech Solutions" }, "styles": { "fontFamily": "google:poppins", "fontSize": 24, "bold": true, "color": "#FFFFFF", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "tagline", "position": { "x": 50, "y": 82 }, "data": { "content": "Design & Engineering" }, "styles": { "fontFamily": "google:inter", "fontSize": 10, "color": "#94A3B8", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "doc_type", "position": { "x": 345, "y": 48, "maxWidth": 200 }, "data": { "content": "INVOICE" }, "styles": { "fontFamily": "google:poppins", "fontSize": 24, "bold": true, "color": "#FFFFFF", "textAlign": "right" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "invoice_number", "position": { "x": 345, "y": 84, "maxWidth": 200 }, "data": { "content": "# INV-2026-001" }, "styles": { "fontFamily": "google:inter", "fontSize": 10, "color": "#93C5FD", "textAlign": "right" } } },
 
-          { "id": "billLabel", "type": "text", "position": { "x": 50, "y": 180, "w": 200, "h": 12 }, "data": { "content": "BILLED TO" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "bold": true, "color": "#3B82F6" } },
-          { "id": "billName", "type": "text", "position": { "x": 50, "y": 196, "w": 260, "h": 18 }, "data": { "content": "Globex Corporation" }, "styles": { "fontFamily": "google:inter", "fontSize": 13, "bold": true, "color": "#0F172A" } },
-          { "id": "billAddr", "type": "text", "position": { "x": 50, "y": 216, "w": 260, "h": 30 }, "data": { "content": "1200 Market Street, Suite 500\nSan Francisco, CA 94102" }, "styles": { "fontFamily": "google:inter", "fontSize": 10, "color": "#64748B", "lineHeight": 1.4 } },
+    { "type": "add_element", "args": { "type": "text", "name": "bill_label", "position": { "x": 50, "y": 180 }, "data": { "content": "BILLED TO" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "bold": true, "color": "#3B82F6", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "bill_to_name", "position": { "x": 50, "y": 196 }, "data": { "content": "Globex Corporation" }, "styles": { "fontFamily": "google:inter", "fontSize": 13, "bold": true, "color": "#0F172A", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "bill_to_address", "position": { "x": 50, "y": 216, "maxWidth": 260 }, "data": { "content": "1200 Market Street, Suite 500\nSan Francisco, CA 94102" }, "styles": { "fontFamily": "google:inter", "fontSize": 10, "color": "#64748B", "lineHeight": 1.4, "textAlign": "left" } } },
 
-          { "id": "dateLabel", "type": "text", "position": { "x": 345, "y": 180, "w": 200, "h": 12 }, "data": { "content": "INVOICE DATE" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "bold": true, "color": "#64748B", "textAlign": "right" } },
-          { "id": "dateVal", "type": "text", "position": { "x": 345, "y": 194, "w": 200, "h": 16 }, "data": { "content": "31 May 2026" }, "styles": { "fontFamily": "google:inter", "fontSize": 12, "bold": true, "color": "#0F172A", "textAlign": "right" } },
-          { "id": "dueLabel", "type": "text", "position": { "x": 345, "y": 218, "w": 200, "h": 12 }, "data": { "content": "DUE DATE" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "bold": true, "color": "#64748B", "textAlign": "right" } },
-          { "id": "dueVal", "type": "text", "position": { "x": 345, "y": 232, "w": 200, "h": 16 }, "data": { "content": "15 Jun 2026" }, "styles": { "fontFamily": "google:inter", "fontSize": 12, "bold": true, "color": "#0F172A", "textAlign": "right" } },
+    { "type": "add_element", "args": { "type": "text", "name": "date_label", "position": { "x": 345, "y": 180, "maxWidth": 200 }, "data": { "content": "INVOICE DATE" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "bold": true, "color": "#64748B", "textAlign": "right" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "invoice_date", "position": { "x": 345, "y": 194, "maxWidth": 200 }, "data": { "content": "31 May 2026" }, "styles": { "fontFamily": "google:inter", "fontSize": 12, "bold": true, "color": "#0F172A", "textAlign": "right" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "due_label", "position": { "x": 345, "y": 218, "maxWidth": 200 }, "data": { "content": "DUE DATE" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "bold": true, "color": "#64748B", "textAlign": "right" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "due_date", "position": { "x": 345, "y": 232, "maxWidth": 200 }, "data": { "content": "15 Jun 2026" }, "styles": { "fontFamily": "google:inter", "fontSize": 12, "bold": true, "color": "#0F172A", "textAlign": "right" } } },
 
-          { "id": "items", "type": "table", "position": { "x": 50, "y": 280, "w": 495, "h": 110 }, "data": { "rows": 4, "columns": 4, "template": "headerRow", "headerRow": true } },
+    { "type": "add_element", "args": { "type": "table", "name": "line_items", "position": { "x": 50, "y": 280 }, "data": { "rows": 4, "columns": 4, "columnWidths": [235, 60, 100, 100], "template": "headerRow", "headerRow": true, "cells": [
+      ["Description", "Qty", "Rate", "Amount"],
+      ["Software consultancy — May 2026", "1", "$5,000.00", "$5,000.00"],
+      ["", "", "", ""],
+      ["", "", "", ""]
+    ] } } },
 
-          { "id": "totalsBox", "type": "shape", "position": { "x": 345, "y": 408, "w": 200, "h": 46 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#0B1220", "borderRadius": 6 } },
-          { "id": "totalLabel", "type": "text", "position": { "x": 362, "y": 422, "w": 90, "h": 18 }, "data": { "content": "TOTAL DUE" }, "styles": { "fontFamily": "google:inter", "fontSize": 10, "bold": true, "color": "#FFFFFF" } },
-          { "id": "totalVal", "type": "text", "position": { "x": 442, "y": 418, "w": 90, "h": 26 }, "data": { "content": "$5,000.00" }, "styles": { "fontFamily": "google:poppins", "fontSize": 18, "bold": true, "color": "#FFFFFF", "textAlign": "right" } },
+    { "type": "add_element", "args": { "type": "shape", "name": "totals_box", "position": { "x": 345, "y": 408, "w": 200, "h": 46 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#0B1220", "borderRadius": 6 } } },
+    { "type": "add_element", "args": { "type": "text", "name": "total_label", "position": { "x": 362, "y": 422 }, "data": { "content": "TOTAL DUE" }, "styles": { "fontFamily": "google:inter", "fontSize": 10, "bold": true, "color": "#FFFFFF", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "total_due", "position": { "x": 432, "y": 418, "maxWidth": 100 }, "data": { "content": "$5,000.00" }, "styles": { "fontFamily": "google:poppins", "fontSize": 18, "bold": true, "color": "#FFFFFF", "textAlign": "right" } } },
 
-          { "id": "footRule", "type": "shape", "position": { "x": 50, "y": 782, "w": 495, "h": 1 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#E2E8F0" } },
-          { "id": "footer", "type": "text", "position": { "x": 50, "y": 790, "w": 495, "h": 14 }, "data": { "content": "Thank you for your business · Acme Tech Solutions · billing@acme.example" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "color": "#64748B", "textAlign": "center" } }
-        ]
-      }
-    },
-    {
-      "tool": "update_elements",
-      "input": {
-        "updates": [
-          { "id": "items", "data": { "cells": [
-            [ { "type": "text", "data": { "content": "Description" } }, { "type": "text", "data": { "content": "Qty" } }, { "type": "text", "data": { "content": "Rate" } }, { "type": "text", "data": { "content": "Amount" } } ],
-            [ { "type": "text", "data": { "content": "Software consultancy — May 2026" } }, { "type": "text", "data": { "content": "1" } }, { "type": "text", "data": { "content": "$5,000.00" } }, { "type": "text", "data": { "content": "$5,000.00" } } ],
-            [ { "type": "text", "data": { "content": "" } }, { "type": "text", "data": { "content": "" } }, { "type": "text", "data": { "content": "" } }, { "type": "text", "data": { "content": "" } } ],
-            [ { "type": "text", "data": { "content": "" } }, { "type": "text", "data": { "content": "" } }, { "type": "text", "data": { "content": "" } }, { "type": "text", "data": { "content": "" } } ]
-          ] } }
-        ]
-      }
-    },
-    {
-      "tool": "bind_variables",
-      "input": {
-        "bindings": [
-          { "nodeId": "invNo", "field": "content", "type": "text", "name": "invoice_number" },
-          { "nodeId": "billName", "field": "content", "type": "text", "name": "bill_to_name" },
-          { "nodeId": "billAddr", "field": "content", "type": "text", "name": "bill_to_address" },
-          { "nodeId": "dateVal", "field": "content", "type": "text", "name": "invoice_date" },
-          { "nodeId": "dueVal", "field": "content", "type": "text", "name": "due_date" },
-          { "nodeId": "totalVal", "field": "content", "type": "text", "name": "total_due" },
-          { "nodeId": "items", "field": "cells", "type": "table", "name": "line_items" }
-        ]
-      }
-    }
+    { "type": "add_element", "args": { "type": "shape", "name": "foot_rule", "position": { "x": 50, "y": 782, "w": 495, "h": 1 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#E2E8F0" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "footer", "position": { "x": 50, "y": 790, "maxWidth": 495 }, "data": { "content": "Thank you for your business · Acme Tech Solutions · billing@acme.example" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "color": "#64748B", "textAlign": "center" } } },
+
+    { "type": "bind_variable", "args": { "name": "invoice_number" } },
+    { "type": "bind_variable", "args": { "name": "bill_to_name" } },
+    { "type": "bind_variable", "args": { "name": "bill_to_address" } },
+    { "type": "bind_variable", "args": { "name": "invoice_date" } },
+    { "type": "bind_variable", "args": { "name": "due_date" } },
+    { "type": "bind_variable", "args": { "name": "total_due" } },
+    { "type": "bind_variable", "args": { "name": "line_items" } }
   ]
 }

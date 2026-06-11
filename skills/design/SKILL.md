@@ -6,16 +6,34 @@ allowed-tools: Bash(node *), Read
 
 # ImaginePDF — Design
 
-You build a design by calling **authoring tools** through the ImaginePDF API.
-Each tool call is `{ tool, input }`; the server (pdftreejs — the tool authority)
-applies the batch to the design's node tree and persists it. You never construct
-raw tree JSON — you describe intent with tools.
+You build a design by sending **actions** through the ImaginePDF API. Each
+action is `{ type, args }` and does ONE thing — add one element, update one
+element, bind one variable. The server (pdftreejs — the action authority) folds
+your batch over the design tree one action at a time (`tree + action → tree`)
+and persists the result. You never construct raw tree JSON — you describe
+intent with actions.
 
-The element + variable tools are **list-native**: one `add_elements` call lays
-down MANY elements at once (and `update_elements` / `remove_elements` /
-`bind_variables` likewise take arrays). Prefer one bulk call over many singular
-ones. You can pass tools to `create` (build in one request) or `patch` (edit an
-existing design) — both take a `tools` array.
+Send MANY actions per request: both `create` and `patch` take an ordered
+`actions` array, applied sequentially and **atomically** (any failure rejects
+the whole batch and the error names the failing action index).
+
+**SIZING IS DERIVED — the core contract:**
+- **text**: `position` is `{x, y, maxWidth?}`. NEVER send `w`/`h` — the server
+  derives the box from content + fontSize + lineHeight. `maxWidth` (points)
+  pins the box width exactly (content wraps inside) — use it for paragraphs
+  and for right/center-aligned text; omit it for single-line left-aligned
+  labels.
+- **table**: `position` is `{x, y}`. The box is derived from the grid — set
+  `data.columnWidths` (points, one per column) or `data.width` (total, split
+  equally); row heights follow cell content.
+- Every action result echoes the element's `{id, name, position}` **with the
+  derived box** — use it to place the next element and to check page fit.
+- qr is `{x, y, size}` (square); image/barcode/shape keep `{x, y, w, h}`.
+
+**IDS ARE SERVER-MINTED — address by name:**
+- Never invent an `id`. Give each element a unique, meaningful `name`
+  (`"title"`, `"items"`, `"customer_name"`) and use that name in later actions
+  (`update_element`, `bind_variable`, …). The minted id comes back in results.
 
 **CRITICAL RULES**
 - Build and render PDFs ONLY through the ImaginePDF scripts. Never use Python,
@@ -25,16 +43,16 @@ existing design) — both take a `tools` array.
 
 ## Before authoring — read these
 
-1. `node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" tools` — the authoritative,
-   live tool catalog (names + input shapes).
-2. `${CLAUDE_PLUGIN_ROOT}/skills/design/reference/README.md` — units, addressing,
-   table-cell shape, and the stable conventions.
+1. `node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" actions` — the
+   authoritative, live action catalog (types + args shapes).
+2. `${CLAUDE_PLUGIN_ROOT}/skills/design/reference/README.md` — units, naming,
+   the sizing contract, table-cell shape, and the stable conventions.
 3. **`${CLAUDE_PLUGIN_ROOT}/skills/design/reference/design-system.md`** — palettes,
    type pairings, spacing, and composition patterns. Read this so the output is
    distinctive, not a generic blue-on-white default.
 4. **`${CLAUDE_PLUGIN_ROOT}/skills/design/reference/gallery/`** — curated example
    designs (invoice, receipt, certificate, report, letter) as ready-to-send
-   `tools` arrays. Start from the closest exemplar and adapt it — do not build
+   `actions` arrays. Start from the closest exemplar and adapt it — do not build
    from a blank page.
 
 ## Scripts
@@ -44,9 +62,9 @@ All scripts are invoked as
 
 | Subcommand | What it does |
 | --- | --- |
-| `design.cjs tools` | live authoring tool catalog |
-| `design.cjs create '{"name":"…","tools":[…]}'` | create + populate in one call |
-| `design.cjs patch '{"designId":"…","tools":[…]}'` | apply a tool batch / rename / describe |
+| `design.cjs actions` | live authoring action catalog |
+| `design.cjs create '{"name":"…","actions":[…]}'` | create + populate in one call |
+| `design.cjs patch '{"designId":"…","actions":[…]}'` | apply an action batch / rename / describe |
 | `design.cjs get '{"designId":"…"}'` | full tree + bound variables |
 | `design.cjs preview '{"designId":"…","page":0}'` | render a page to a PNG you can read |
 | `design.cjs placeholder '{"name":"Logo","label":"LOGO"}'` | mint a replaceable placeholder image |
@@ -59,25 +77,26 @@ All scripts are invoked as
    blue-on-white.
 
 2. **Create + build in one call** (a new design starts with one blank A4 page;
-   pass an initial `tools` array to populate it). Returns `designId` and per-tool
-   `results`:
+   pass an initial `actions` array to populate it). Returns `designId` and
+   per-action `results` — each with the minted id and the **derived box**:
    ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" create '{"name":"Invoice","tools":[
-     {"tool":"add_elements","input":{"elements":[
-       {"id":"title","type":"text","position":{"x":50,"y":50,"w":300,"h":30},
-        "data":{"content":"Invoice #1042"},"styles":{"fontSize":24,"bold":true}},
-       {"id":"items","type":"table","position":{"x":50,"y":120,"w":495,"h":160},
-        "data":{"rows":4,"columns":4,"template":"headerRow","headerRow":true}}
-     ]}},
-     {"tool":"bind_variables","input":{"bindings":[
-       {"nodeId":"title","field":"content","type":"text","name":"invoice_title"}
-     ]}}
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" create '{"name":"Invoice","actions":[
+     {"type":"add_element","args":{"type":"text","name":"title",
+      "position":{"x":50,"y":50},
+      "data":{"content":"Invoice #1042"},"styles":{"fontSize":24,"bold":true}}},
+     {"type":"add_element","args":{"type":"table","name":"items",
+      "position":{"x":50,"y":120},
+      "data":{"rows":4,"columns":4,"columnWidths":[235,60,100,100],
+              "template":"headerRow","headerRow":true}}},
+     {"type":"bind_variable","args":{"name":"title"}}
    ]}'
    ```
+   Note: no `w`/`h` on the text or table — the server sizes them. A later action
+   may reference an element added earlier in the same batch, by `name`.
 
-3. **Refine** with `patch` (e.g. `update_elements` to set table cells). Each call
-   is **atomic** — if any tool/item fails, nothing is saved and the error names
-   the failing tool/index.
+3. **Refine** with `patch` (e.g. `update_element` to set table cells, restyle,
+   or move things). Text re-derives its box when content / maxWidth / metric
+   styles change; tables re-derive on any data change.
 
 4. **Preview and revise — do this, don't skip it.** Render the page and LOOK at
    it:
@@ -109,14 +128,19 @@ You cannot see the user's local files, and the design references images by an
 
 ## Guidance
 
-- Always create with a meaningful `name` first.
-- Lay out the whole page in ONE `add_elements` call when you can.
-- Build top-to-bottom; keep a consistent spacing rhythm (see `design-system.md`).
-- Tables: create structure in `add_elements` (`rows`/`columns`/`template`), then
-  set cell text via `update_elements` `data.cells` (`TableCell[][]`, counts
-  matching rows × columns).
-- Make fillable fields with `bind_variables`; each variable `name` is the key the
-  generation step fills.
+- Always create with a meaningful design `name` first, and give every element a
+  unique, meaningful element `name`.
+- Lay out the whole page as ONE ordered `actions` array when you can — paint
+  order follows action order (later = on top; fix mistakes with
+  `reorder_element`).
+- Build top-to-bottom; budget vertical space as `fontSize × lineHeight` per text
+  line and keep a consistent spacing rhythm (see `design-system.md`).
+- Tables: one `add_element` carries the whole thing — structure
+  (`rows`/`columns`/`columnWidths`/`template`) AND `cells` (`TableCell[][]`).
+  Update cells later via `update_element` `data.cells`.
+- Make a field fillable with `bind_variable` — the element's `name` becomes the
+  variable name (the key the generation step fills), so name elements the way
+  you want the dataset columns named.
 
 When the design looks right, hand off to **`imaginepdf:generate`** to produce the
 PDF (single, or one-per-row from a dataset).

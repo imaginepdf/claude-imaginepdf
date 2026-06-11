@@ -12,8 +12,8 @@ extra skills trigger repeated permission prompts.
 
 **Open source:** this repo is public. Do NOT bundle the proprietary `pdftreejs`
 package here. The plugin only carries hand-written schema/design reference docs
-(under `skills/design/reference/`) so Claude can emit correct op payloads and
-tasteful layouts; the server owns `pdftreejs` and applies the ops.
+(under `skills/design/reference/`) so Claude can emit correct action payloads and
+tasteful layouts; the server owns `pdftreejs` and applies the actions.
 
 ## Layout
 
@@ -23,14 +23,14 @@ claude-imaginepdf/
 │   ├── plugin.json            # manifest (+ userConfig: api_key only)
 │   └── marketplace.json       # GitHub marketplace catalog (this repo)
 ├── src/
-│   ├── design.ts              # tools/create/get/list/patch + preview/placeholder/upload
+│   ├── design.ts              # actions/create/get/list/patch + preview/placeholder/upload
 │   ├── generate.ts            # render a PDF + batch (generate/batch/batch-status/batch-download)
 │   └── lib/
 │       ├── auth.ts            # resolve API key (userConfig → env); base URL via env fallback
 │       └── api-client.ts      # X-API-Key HTTP client (get/post/patch/postForm/putForm/download)
 ├── skills/
 │   ├── design/                # author/edit layout (/imaginepdf:design)
-│   │   └── reference/         # README (tool conventions), design-system.md, gallery/*.json
+│   │   └── reference/         # README (action conventions), design-system.md, gallery/*.json
 │   └── generate/              # render + dynamic field values, single + batch
 ├── commands/index.md          # /imaginepdf launcher
 ├── build/build.js             # esbuild → scripts/{design,generate}.cjs
@@ -48,14 +48,17 @@ the versioned, API-key-only public surface:
 - `POST  /api/v1/designs` — create a design
 - `GET   /api/v1/designs` — list designs
 - `GET   /api/v1/designs/:id` — get a design + tree
-- `POST  /api/v1/designs` also accepts an optional initial `tools[]` to
+- `POST  /api/v1/designs` also accepts an optional initial `actions[]` to
   create-and-populate in one request
-- `PATCH /api/v1/designs/:id` — apply a batch of authoring **tools** and/or
-  rename/describe. Element + variable tools are list-native: `add_elements`,
-  `update_elements`, `remove_elements`, `bind_variables`, `unbind_variables`
-  (each takes an array); singular: `add_page`, `set_page_background`,
-  `set_document_background`, `set_metadata`
-- `GET   /api/v1/tools` — the authoring tool catalog (names + input shapes)
+- `PATCH /api/v1/designs/:id` — apply an ordered batch of authoring **actions**
+  and/or rename/describe. Each action is `{type, args}` and SINGULAR (one
+  element / one binding / one page op): `add_element`, `update_element`,
+  `remove_element`, `reorder_element`, `bind_variable`, `unbind_variable`,
+  `add_page`, `set_page_background`, `set_document_background`, `set_metadata`.
+  Applied sequentially (`tree + action → tree`), atomically. Text/table sizes
+  are DERIVED server-side (text `{x,y,maxWidth?}`, table grid-driven); element
+  ids are server-minted — agents address elements by their unique `name`
+- `GET   /api/v1/actions` — the authoring action catalog (types + args shapes)
 - `GET   /api/v1/preview?design=:id&page=0` — render a page to a PNG (no credit)
 - `POST  /api/v1/assets` — upload an image asset (multipart)
 - `POST  /api/v1/assets/placeholder` — mint a labeled placeholder asset
@@ -64,7 +67,7 @@ the versioned, API-key-only public surface:
 - `POST  /api/v1/batch/generate?design=:id` — one PDF per dataset row (plan-gated)
 - `GET   /api/v1/batch/:jobId/{status,download}` — poll + fetch the zip
 
-The authoring tools are defined and executed server-side by the ImaginePDF API
+The authoring actions are defined and executed server-side by the ImaginePDF API
 (the authority); the plugin is a thin caller. Authoring, preview, and asset
 upload are free; only generation (single and per batch row) costs a credit.
 
@@ -100,10 +103,10 @@ claude --plugin-dir "$(pwd)"
 ## Notes / rules
 
 - Do NOT reintroduce granular element/page endpoints or scripts — authoring is
-  tool-based through `PATCH /api/v1/designs/:id`. The old `element.cjs`/`page.cjs`
+  action-based through `PATCH /api/v1/designs/:id`. The old `element.cjs`/`page.cjs`
   called endpoints that never existed.
-- The tool catalog is owned server-side and served at `GET /api/v1/tools`
-  (via `design.cjs tools`). The plugin's `reference/README.md` is a thin pointer
-  to that live catalog — don't hand-maintain a parallel tool list here.
+- The action catalog is owned server-side and served at `GET /api/v1/actions`
+  (via `design.cjs actions`). The plugin's `reference/README.md` is a thin pointer
+  to that live catalog — don't hand-maintain a parallel action list here.
 - The API-key auth path must remain stable across backend auth refactors — it's
   the only way this plugin authenticates.

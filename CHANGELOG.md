@@ -6,6 +6,23 @@ follows [semantic versioning](https://semver.org); bump `version` in
 
 ## Unreleased
 
+- **Actions, not tools** — the authoring surface is now an ordered batch of
+  SINGULAR actions (`{type, args}`, one element per action): `add_element`,
+  `update_element`, `remove_element`, `reorder_element`, `bind_variable`,
+  `unbind_variable`, `add_page`, `set_page_background`,
+  `set_document_background`, `set_metadata`. The catalog moved to
+  `GET /api/v1/actions` (`design.cjs actions`); `create`/`patch` send
+  `actions: [...]`. The old list-native `tools[]` payload and `/api/v1/tools`
+  are gone (hard cutover).
+- **Derived sizing** — clients no longer set text or table `w`/`h`. Text
+  position is `{x, y, maxWidth?}` (the server measures content + fontSize +
+  lineHeight); tables are grid-driven (`columnWidths`/`width` in points, row
+  heights follow cell content). QR is `{x, y, size}`. Every action result
+  echoes the derived box.
+- **Server-minted ids, name addressing** — `add_element` no longer accepts an
+  `id`; ids are minted server-side (`text-cfd23`). Give elements a unique
+  `name` and address them by it; `bind_variable {name}` uses the element name
+  as the variable name and derives the bound field from the element type.
 - **Two skills only** — consolidated to `imaginepdf:design` (author/edit a
   layout) and `imaginepdf:generate` (render — single or batch). Removes the
   separate `create` / `design-authoring` / `pdf-generation` skills to cut
