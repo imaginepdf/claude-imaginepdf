@@ -59,6 +59,15 @@ or a serif `georgia`/`google:source-serif-4` title + `helvetica` body).
 - Section-to-section gap: 24–32 pt. Inside a card: 12–16 pt padding.
 - Align everything to a small set of x-positions (e.g. left rail 50, right rail
   545, a mid column). Ragged left edges read as amateur.
+- **Vertical rhythm with derived sizing:** text height is computed by the server
+  as `lines × fontSize × lineHeight` — budget space the same way. One body line
+  at 11/1.5 ≈ 17 pt; a 24 pt bold title ≈ 36 pt. Every action result echoes the
+  derived box, so place the next element at `y + h + gap` (gap from the spacing
+  scale) instead of guessing heights.
+- **Pinned-edge recipes:** right-aligned text → `maxWidth` + `textAlign:'right'`
+  with `x = rightRail − maxWidth`; centered text → `maxWidth` +
+  `textAlign:'center'` with `x = (595.28 − maxWidth) / 2`. Without `maxWidth`
+  the box hugs the content and the aligned edge moves with it.
 
 ## Composition patterns (reusable furniture)
 

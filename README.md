@@ -39,13 +39,25 @@ claude --plugin-dir /path/to/claude-imaginepdf
 
 ## Setup
 
-On enable, configure the plugin via `/plugin` → **ImaginePDF**:
+Provide your workspace API key (`pc_live_…`, from the dashboard →
+**Settings → API Keys**) one of two ways:
 
-- **API key** — your workspace key (`pc_live_…`). Stored in your OS keychain.
-- **API base URL** — defaults to production. Set `http://localhost:3100` for
-  local development.
+**Export it before you start Claude** — the simplest path:
 
-For local dev you can instead export `IMAGINEPDF_API_KEY` and `IMAGINEPDF_API_URL`.
+```bash
+export IMAGINEPDF_API_KEY=pc_live_...
+claude
+```
+
+Set it in the shell **before** launching Claude — a session that's already
+running won't pick up a later `export`. Add it to your shell profile (or a
+project `.env` you source) to keep it around.
+
+**Or store it in your OS keychain** via `/plugin` → **ImaginePDF** →
+**API key** — set once, persists across sessions.
+
+For local dev against a non-production API, also export
+`IMAGINEPDF_API_URL=http://localhost:3100`.
 
 ## Usage
 

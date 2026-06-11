@@ -1,21 +1,22 @@
 /**
  * design.cjs — author ImaginePDF designs via the public `/api/v1` surface.
  *
- *   tools                                  — list the authoring tool catalog
- *   create  '{"name":"Invoice","description":"…","tools":[{"tool":"…","input":{…}}]}'
+ *   actions                                — list the authoring action catalog
+ *   create  '{"name":"Invoice","description":"…","actions":[{"type":"…","args":{…}}]}'
  *   get     '{"designId":"…"}'
  *   list    '{}'
- *   patch   '{"designId":"…","name":"…","description":"…","tools":[{"tool":"…","input":{…}}]}'
+ *   patch   '{"designId":"…","name":"…","description":"…","actions":[{"type":"…","args":{…}}]}'
  *   preview '{"designId":"…","page":0}'              — render a page to a PNG you can read
  *   placeholder '{"name":"Company logo","label":"LOGO","width":200,"height":80}'
  *   upload  '{"file":"/path/logo.png","name":"Logo"}'             — add a new image asset
  *   upload  '{"file":"/path/logo.png","assetId":"<placeholder-id>"}' — replace in place
  *
  * The `patch` subcommand is how a design is built/edited: it sends an ordered
- * batch of TOOL CALLS (`add_element` / `update_element` / `remove_element` /
- * `add_page` / `bind_variable` / …). The server (pdftreejs, the tool authority)
- * applies them to the design tree and persists it. Run `tools` first to get the
- * authoritative catalog + input shapes.
+ * batch of ACTIONS (`add_element` / `update_element` / `remove_element` /
+ * `reorder_element` / `bind_variable` / `add_page` / …). Each action operates
+ * on ONE element; the server (pdftreejs, the action authority) folds them over
+ * the design tree one by one (`tree + action → tree`) and persists the result
+ * atomically. Run `actions` first to get the authoritative catalog + args shapes.
  */
 
 import { readFile } from 'node:fs/promises';
@@ -28,7 +29,7 @@ async function main() {
   const [subcommand, jsonArg] = process.argv.slice(2);
   if (!subcommand) {
     console.error(
-      "Usage: design.cjs <tools|create|get|list|patch|preview|placeholder|upload> '<json>'",
+      "Usage: design.cjs <actions|create|get|list|patch|preview|placeholder|upload> '<json>'",
     );
     process.exit(1);
   }
@@ -37,8 +38,8 @@ async function main() {
   const api = createApiClient(getApiKey(), getApiUrl());
 
   switch (subcommand) {
-    case 'tools': {
-      const result = await api.get<unknown>('/api/v1/tools');
+    case 'actions': {
+      const result = await api.get<unknown>('/api/v1/actions');
       console.log(JSON.stringify(result));
       break;
     }
@@ -47,7 +48,7 @@ async function main() {
       const result = await api.post<unknown>('/api/v1/designs', {
         name: args.name,
         ...(args.description !== undefined ? { description: args.description } : {}),
-        ...(args.tools !== undefined ? { tools: args.tools } : {}),
+        ...(args.actions !== undefined ? { actions: args.actions } : {}),
       });
       console.log(JSON.stringify(result));
       break;
@@ -68,7 +69,7 @@ async function main() {
       const body: Record<string, unknown> = {};
       if (args.name !== undefined) body.name = args.name;
       if (args.description !== undefined) body.description = args.description;
-      if (args.tools !== undefined) body.tools = args.tools;
+      if (args.actions !== undefined) body.actions = args.actions;
       const result = await api.patch<unknown>(
         `/api/v1/designs/${encodeURIComponent(args.designId)}`,
         body,
@@ -126,7 +127,7 @@ async function main() {
     }
     default:
       console.error(
-        `Unknown subcommand: ${subcommand}. Use: tools, create, get, list, patch, preview, placeholder, upload`,
+        `Unknown subcommand: ${subcommand}. Use: actions, create, get, list, patch, preview, placeholder, upload`,
       );
       process.exit(1);
   }
