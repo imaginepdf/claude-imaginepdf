@@ -1,5 +1,5 @@
 {
-  "_note": "Exemplar: compact payment receipt, Emerald palette. Narrow content column, a 'PAID' chip, a totals line. Text has NO w/h (maxWidth only where wrapped or right-aligned); the table is grid-driven via columnWidths. Bound elements carry the variable name as their element name. Adapt copy/variables; preview and revise.",
+  "_note": "Exemplar: compact payment receipt, Emerald palette. Narrow content column, a 'PAID' chip, a totals line. Text has NO w/h (maxWidth only where wrapped or right-aligned); the table is grid-driven via columnWidths. The last table row shows the ENVELOPE cell shape ({type, data, styles?} — here a CODE128 barcode cell); plain strings are text cells. Bound elements carry the variable name as their element name. Adapt copy/variables; preview and revise.",
   "name": "Receipt",
   "actions": [
     { "type": "add_element", "args": { "type": "shape", "name": "band", "position": { "x": 0, "y": 0, "w": 595.28, "h": 96 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#0E3B2E" } } },
@@ -9,11 +9,12 @@
     { "type": "add_element", "args": { "type": "text", "name": "receipt_label", "position": { "x": 345, "y": 40, "maxWidth": 200 }, "data": { "content": "RECEIPT" }, "styles": { "fontFamily": "google:inter", "fontSize": 12, "bold": true, "color": "#FFFFFF", "textAlign": "right" } } },
     { "type": "add_element", "args": { "type": "text", "name": "receipt_meta", "position": { "x": 345, "y": 60, "maxWidth": 200 }, "data": { "content": "# R-4821 · 7 Jun 2026" }, "styles": { "fontFamily": "google:inter", "fontSize": 9, "color": "#A7F3D0", "textAlign": "right" } } },
 
-    { "type": "add_element", "args": { "type": "table", "name": "line_items", "position": { "x": 50, "y": 140 }, "data": { "rows": 4, "columns": 3, "columnWidths": [180, 50, 90], "template": "minimal", "cells": [
+    { "type": "add_element", "args": { "type": "table", "name": "line_items", "position": { "x": 50, "y": 140 }, "data": { "rows": 5, "columns": 3, "columnWidths": [180, 50, 90], "template": "minimal", "cells": [
       ["Item", "Qty", "Price"],
       ["Flat white", "1", "$4.50"],
       ["Almond croissant", "1", "$4.00"],
-      ["Sparkling water", "1", "$4.00"]
+      ["Sparkling water", "1", "$4.00"],
+      [{ "type": "barcode", "data": { "content": "R-4821", "format": "CODE128" } }, "", ""]
     ] } } },
 
     { "type": "add_element", "args": { "type": "shape", "name": "total_rule", "position": { "x": 50, "y": 300, "w": 320, "h": 1 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#D1FAE5" } } },

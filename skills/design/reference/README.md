@@ -47,12 +47,25 @@ This returns `{ actions: [ { name, description, args } … ] }`. Build your
 - **Element kinds:** `text`, `image` (needs `data.src`), `qr`, `barcode`,
   `shape` (`data.shapeType`: rectangle/circle/line/arrow), `table`
   (`data.rows/columns/columnWidths/width/template/headerRow/headerColumn/cells`).
+- **Barcode formats (strict):** `CODE128` (default, any ASCII), `CODE39`
+  (digits/letters/space/`- . $ / + %`), `EAN13` (12–13 digits), `EAN8` (7–8),
+  `UPC` (11–12), `ITF14` (13–14 digits) — GTIN check digits are computed when
+  omitted and VERIFIED when supplied; invalid content is rejected with the
+  rule in the error (see the live catalog for the full rules). The
+  human-readable caption is always centered; size it with `styles.fontSize`
+  (pt, default 12) and gap `styles.textMargin` (pt, optional). QR `data` also
+  takes `errorCorrectionLevel` (L/M/Q/H) and `margin` (quiet-zone modules).
 - **Table cells (strict):** `data.cells` = a 2-D array. Each cell is EITHER a
   plain string (→ a text cell) OR a canonical envelope `{ type, data, styles? }`
   where `data.content` is a string for text/qr/barcode and `data.src` is a
-  string for image. The grid resizes to fit `cells`. Any other shape (e.g.
-  `{value}`, `{url}`) is rejected with a precise error — fix the cell and
-  retry; values are never silently dropped.
+  string for image — e.g. a barcode cell:
+  `{ "type": "barcode", "data": { "content": "4006381333931", "format": "EAN13" } }`.
+  The grid resizes to fit `cells` (max **500 rows × 50 columns**). Any other
+  shape (e.g. `{value}`, `{url}`) is rejected with a precise error — fix the
+  cell and retry; values are never silently dropped. qr/barcode CELLS follow
+  the SAME format/content rules as standalone elements (non-empty content is
+  validated up front; empty = placeholder). `columnWidths` entries must be
+  positive points (floored at 15pt per column).
 - **Variables:** `bind_variable {name}` — that's the whole args. The element's
   `name` becomes the variable name (the key you pass at generation time); the
   bound field is derived from the element type (text→content, image→src,

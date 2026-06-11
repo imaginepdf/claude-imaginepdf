@@ -34,7 +34,10 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/generate.cjs" generate '{
 - `data` is optional; omit it to render the design as-is.
 - Text/qr/barcode/image variables take a string value. Table variables take a
   native 2-D string array (`string[][]`), one inner array per row — NOT a
-  JSON-encoded string.
+  JSON-encoded string. A malformed table value (not an array, a row that
+  isn't an array, or more than 500 rows) FAILS the generation with a clear
+  400 (single) / per-row reason (batch) — it never silently renders the
+  design's placeholder cells. A `null` cell renders as an empty cell.
 - A value's key must match a bound variable's name exactly. Unknown keys are
   ignored; the field renders its static content.
 
