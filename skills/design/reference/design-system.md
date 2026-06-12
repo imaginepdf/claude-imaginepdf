@@ -3,7 +3,9 @@
 The renderer is competent but plain by default. The difference between a generic
 document and one a user would actually use is **deliberate choices**: one palette,
 a clear type hierarchy, a consistent spacing rhythm, and one strong visual anchor.
-Pick a vibe per document. Do not default to blue-on-white.
+Pick a vibe per document — derived from the brand/context or the user's answer
+to the style question (see the skill's step 0), never out of habit. Don't ship
+the plain unstyled default; a *deliberate* blue palette is fine.
 
 ## What the renderer can and can't do
 
@@ -17,6 +19,10 @@ Use these to build depth (there are NO gradients, NO drop shadows, NO blur):
 - **One** bold accent color, used sparingly (section labels, totals, a rule).
 - Rounded corners on shapes/images (`borderRadius`) and `fillOpacity` for soft
   tint panels.
+- Image polish: `data.crop` to reframe a photo without re-uploading,
+  `grayscale: true` + low `opacity` for watermark-style background imagery,
+  a hairline `stroke` (0.75–1pt, muted color) to seat photos on white, and
+  `flipH` to point a subject INTO the page instead of off it.
 
 Available fonts: the catalog font NAMES served by
 `node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" fonts` (GET /api/v1/fonts) —
@@ -25,22 +31,44 @@ e.g. `"Inter"`, `"Poppins"`, `"DM Sans"`, `"Playfair Display"`,
 catalog (case-insensitive, normalized to the canonical name); anything else is
 rejected. Text also supports `lineHeight` (multiplier, default 1.5) and
 `letterSpacing` (tracking in pt — great for spaced-out uppercase eyebrows).
+For an uppercase eyebrow, prefer `textTransform: 'uppercase'` over retyping
+the content in caps — the source text stays editable and the case is a style.
+`opacity` (0..1) makes soft watermark-style text; `anchor: 'bottom'` pins a
+text block's bottom edge so it grows upward (totals above a rule line).
 
-## Palettes (pick ONE)
+## Palettes (a starting set — UNRANKED)
 
 Each: `ink` (primary text), `muted` (secondary text), `band` (dark header fill),
 `accent` (one highlight), `panel` (soft section fill), `hairline` (rules).
+The table is ordered by hue, NOT preference — **choose from the document's
+context, and vary across documents** (do not habitually reach for one row).
 
-| Name | ink | muted | band | accent | panel | hairline |
-| --- | --- | --- | --- | --- | --- | --- |
-| Midnight | `#0F172A` | `#64748B` | `#0B1220` | `#3B82F6` | `#F1F5F9` | `#E2E8F0` |
-| Emerald | `#0B1B14` | `#5B6B63` | `#0E3B2E` | `#10B981` | `#ECFDF5` | `#D1FAE5` |
-| Amber/Charcoal | `#1C1917` | `#78716C` | `#1C1917` | `#F59E0B` | `#FAF7F2` | `#E7E2DA` |
-| Plum/Rose | `#1A0B1E` | `#7A6B80` | `#3B0764` | `#EC4899` | `#FCF2F8` | `#F3E0EC` |
-| Mono/Slate | `#111827` | `#6B7280` | `#111827` | `#111827` | `#F3F4F6` | `#E5E7EB` |
+| Name | Vibe | ink | muted | band | accent | panel | hairline |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Burgundy/Ivory | formal, luxe | `#1C0A0E` | `#8A6E72` | `#5C1A2A` | `#B3324B` | `#FBF3F1` | `#EFDFDB` |
+| Terracotta | warm, earthy | `#2A1A12` | `#9C7B68` | `#8C3D21` | `#E2725B` | `#FBF1EC` | `#F0DFD5` |
+| Amber/Charcoal | bold, editorial | `#1C1917` | `#78716C` | `#1C1917` | `#F59E0B` | `#FAF7F2` | `#E7E2DA` |
+| Olive/Sand | organic, calm | `#1F2014` | `#82836B` | `#3F4424` | `#8A9A2B` | `#F7F6EC` | `#E8E7D4` |
+| Emerald | fresh, fintech | `#0B1B14` | `#5B6B63` | `#0E3B2E` | `#10B981` | `#ECFDF5` | `#D1FAE5` |
+| Ocean Teal | coastal, serene | `#0C1B1E` | `#5E7A7F` | `#114E5A` | `#14B8A6` | `#EDFAF8` | `#D3EEEA` |
+| Midnight | corporate, trusty | `#0F172A` | `#64748B` | `#0B1220` | `#3B82F6` | `#F1F5F9` | `#E2E8F0` |
+| Indigo/Lavender | soft tech | `#191633` | `#7B76A0` | `#312E81` | `#818CF8` | `#F4F3FD` | `#E3E1F5` |
+| Plum/Rose | expressive, beauty | `#1A0B1E` | `#7A6B80` | `#3B0764` | `#EC4899` | `#FCF2F8` | `#F3E0EC` |
+| Mono/Slate | minimal, severe | `#111827` | `#6B7280` | `#111827` | `#111827` | `#F3F4F6` | `#E5E7EB` |
 
 White page background (`#FFFFFF`) is the default canvas; `panel` is for section
 cards; `band` text should be `#FFFFFF` or a near-white.
+
+**Custom palettes are first-class.** When the user names a brand color, build
+the roles around it instead of forcing a table row: `accent` = the brand color;
+`band` = a deep shade of it (or near-black if the color is light); `panel` = a
+faint tint of it; `ink`/`muted` = neutral darks. Keep ONE accent and make sure
+white text is legible on the `band`.
+
+**Context → palette examples** (a pull, not a rule): law/finance-formal →
+Burgundy or Mono/Slate; fintech/SaaS → Midnight or Indigo; café/restaurant →
+Terracotta; wellness/spa → Ocean Teal or Olive; creative studio → Plum/Rose or
+Amber/Charcoal; sustainability → Emerald or Olive.
 
 ## Type scale (points)
 
@@ -52,9 +80,21 @@ cards; `band` text should be `#FFFFFF` or a near-white.
 | Body | 10–11 | regular | `ink`; lineHeight 1.4–1.5 |
 | Caption / fine print | 8–9 | regular | `muted` |
 
-Pair at most two families: a strong display/sans for headings + a readable body
-(e.g. `"Poppins"` headings + `"Inter"` body; or all-`"DM Sans"`;
-or a serif `"Source Serif 4"`/`"Playfair Display"` title + `"Inter"` body).
+Pair at most two families: a strong display/sans for headings + a readable
+body. Match the pairing to the vibe (UNRANKED — vary like palettes):
+
+| Vibe | Headings | Body |
+| --- | --- | --- |
+| Geometric / modern | `"Poppins"` or `"Space Grotesk"` | `"Inter"` |
+| Friendly / clean | all-`"DM Sans"` | (one family is fine) |
+| Editorial / serif | `"Playfair Display"` or `"Source Serif 4"` | `"Source Sans 3"` or `"Inter"` |
+| Classic / formal | `"EB Garamond"` or `"Libre Baskerville"` | `"Lato"` |
+| Technical / precise | `"IBM Plex Sans"` | `"IBM Plex Sans"` |
+| Bold / poster | `"Bebas Neue"`, `"Anton"`, or `"Archivo Black"` | `"Manrope"` |
+| Ceremonial accent | `"Great Vibes"` / `"Dancing Script"` — ONE line only (e.g. a certificate recipient name) | a serif or sans from above |
+
+The full catalog (more serifs, handwriting, display faces) is one call away:
+`design.cjs fonts`.
 
 ## Spacing & grid
 
@@ -94,6 +134,8 @@ or a serif `"Source Serif 4"`/`"Playfair Display"` title + `"Inter"` body).
 - DO leave whitespace — cramped is the #1 "templatey" tell.
 - DON'T center everything; mix left-aligned content with a few right-aligned anchors.
 - DON'T use more than two font families or more than one accent color.
+- DON'T reuse the same palette/pairing across unrelated documents out of
+  habit — every document gets a deliberate, context-fitting choice.
 - DON'T rely on effects the renderer ignores (gradients/shadows) — fake depth with
   bands, rules, tint panels, and whitespace.
 

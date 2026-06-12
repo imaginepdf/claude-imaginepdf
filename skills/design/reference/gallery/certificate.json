@@ -1,5 +1,5 @@
 {
-  "_note": "Exemplar: certificate of completion, Amber/Charcoal palette, full-bleed border. Centered display title is appropriate HERE (ceremonial). Centering recipe: centered text gets maxWidth + textAlign:center with x = (595.28 − maxWidth) / 2 — the box is pinned, the content centers inside it. Bound elements carry the variable name as their element name. Adapt copy/variables; preview and revise.",
+  "_note": "Exemplar: certificate of completion, Amber/Charcoal palette, full-bleed border. The palette here is INCIDENTAL — the exemplar demonstrates structure; restyle to the palette chosen in the style-intent step unless the user asked for this exact look. Centered display title is appropriate HERE (ceremonial). Centering recipe: centered text gets maxWidth + textAlign:center with x = (595.28 − maxWidth) / 2 — the box is pinned, the content centers inside it. Bound elements carry the variable name as their element name. Adapt copy/variables; preview and revise.",
   "name": "Certificate",
   "actions": [
     { "type": "set_page_background", "args": { "page": 0, "background": { "color": "#FAF7F2" } } },

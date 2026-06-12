@@ -1,5 +1,5 @@
 {
-  "_note": "Exemplar: compact payment receipt, Emerald palette. Narrow content column, a 'PAID' chip, a totals line. Text has NO w/h (maxWidth only where wrapped or right-aligned); the table is grid-driven via columnWidths. The last table row shows the ENVELOPE cell shape ({type, data, styles?} — here a CODE128 barcode cell); plain strings are text cells. Bound elements carry the variable name as their element name. Adapt copy/variables; preview and revise.",
+  "_note": "Exemplar: compact payment receipt, Emerald palette. The palette here is INCIDENTAL — the exemplar demonstrates structure; restyle to the palette chosen in the style-intent step unless the user asked for this exact look. Narrow content column, a 'PAID' chip, a totals line. Text has NO w/h (maxWidth only where wrapped or right-aligned); the table is grid-driven via columnWidths. The last table row shows the ENVELOPE cell shape ({type, data, styles?} — here a CODE128 barcode cell); plain strings are text cells. Bound elements carry the variable name as their element name. Adapt copy/variables; preview and revise.",
   "name": "Receipt",
   "actions": [
     { "type": "add_element", "args": { "type": "shape", "name": "band", "position": { "x": 0, "y": 0, "w": 595.28, "h": 96 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#0E3B2E" } } },

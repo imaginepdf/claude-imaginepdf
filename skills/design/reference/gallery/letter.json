@@ -1,5 +1,5 @@
 {
-  "_note": "Exemplar: business letter / letterhead, Midnight palette. Slim letterhead rule (not a heavy band), sender block, date, recipient, body, sign-off. Mostly left-aligned, generous whitespace. The long body text carries maxWidth: 495 so it wraps at the content rail and the server derives its height. Bound elements carry the variable name as their element name. Adapt copy/variables; preview and revise.",
+  "_note": "Exemplar: business letter / letterhead, Midnight palette. The palette here is INCIDENTAL — the exemplar demonstrates structure; restyle to the palette chosen in the style-intent step unless the user asked for this exact look. Slim letterhead rule (not a heavy band), sender block, date, recipient, body, sign-off. Mostly left-aligned, generous whitespace. The long body text carries maxWidth: 495 so it wraps at the content rail and the server derives its height. Bound elements carry the variable name as their element name. Adapt copy/variables; preview and revise.",
   "name": "Letter",
   "actions": [
     { "type": "add_element", "args": { "type": "text", "name": "sender", "position": { "x": 50, "y": 50 }, "data": { "content": "Acme Tech Solutions" }, "styles": { "fontFamily": "Poppins", "fontSize": 18, "bold": true, "color": "#0F172A", "textAlign": "left" } } },

@@ -42,6 +42,16 @@ This returns `{ actions: [ { name, description, args } … ] }`. Build your
   teaching error. Text spacing: `lineHeight` (multiplier, default 1.5) and
   `letterSpacing` (tracking in POINTS, e.g. `1` for spaced-out uppercase
   eyebrows) — both re-derive the text box height.
+- **More text styles:** `textTransform` (`none`/`uppercase`/`lowercase`/
+  `capitalize`) is a render-time case transform — the stored content is never
+  mutated, and the box height re-derives for the transformed glyphs (note:
+  `capitalize` follows the PDF renderer's rule — punctuation is not a word
+  boundary, so `foo-bar` prints `Foo-bar`). `opacity` is whole-element
+  transparency 0..1 (1 = opaque). `anchor` (`top` default/`middle`/`bottom`)
+  picks which edge stays pinned when the derived height changes — including
+  when a bound variable's substituted value is taller/shorter at generation
+  time (`bottom` grows upward; upward growth is not collision-checked against
+  content above).
 - **Ids are server-minted; address by `name`:** never send an `id` on
   `add_element`. Give each element a unique, meaningful `name` and use
   `{name: "..."}` (or the echoed id) in `update_element` / `remove_element` /
@@ -53,6 +63,14 @@ This returns `{ actions: [ { name, description, args } … ] }`. Build your
 - **Element kinds:** `text`, `image` (needs `data.src`), `qr`, `barcode`,
   `shape` (`data.shapeType`: rectangle/circle/line/arrow), `table`
   (`data.rows/columns/columnWidths/width/template/headerRow/headerColumn/cells`).
+- **Image styling:** `styles` supports `fit`, `borderRadius` (PERCENT 0–100;
+  50 on a square = circle), `opacity` (0..1), `flipH`/`flipV` (booleans),
+  `stroke`/`strokeWidth` (POINTS, drawn inside the box)/`strokeStyle`
+  (solid|dashed|dotted), and `filters` `{brightness, contrast, saturation
+  (0..2, 1 = neutral), grayscale (boolean)}` — the filters object is replaced
+  wholesale on update. `data.crop` `{x,y,w,h}` is a NORMALIZED source window
+  (fractions 0..1, `x+w ≤ 1`, `y+h ≤ 1`): the window fills the box exactly
+  and `fit` is ignored while set; `crop: null` clears it on update.
 - **Barcode formats (strict):** `CODE128` (default, any ASCII), `CODE39`
   (digits/letters/space/`- . $ / + %`), `EAN13` (12–13 digits), `EAN8` (7–8),
   `UPC` (11–12), `ITF14` (13–14 digits) — GTIN check digits are computed when

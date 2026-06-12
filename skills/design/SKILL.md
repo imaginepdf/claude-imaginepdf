@@ -43,21 +43,28 @@ the whole batch and the error names the failing action index).
 
 **FONTS ARE A CATALOG — use proper family names:**
 - `styles.fontFamily` takes a font NAME from the catalog (`"Inter"`,
-  `"DM Sans"`, `"Playfair Display"`). List the live catalog with
-  `node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" fonts` — anything not in it
-  is rejected by the server. Text also supports `lineHeight` (multiplier) and
-  `letterSpacing` (tracking in pt).
+  `"DM Sans"`, `"Playfair Display"`) — anything else is rejected by the
+  server. The pairings in `design-system.md` cover the default path; run
+  `node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" fonts` only when you want
+  the full catalog (a rejection error also points you there). Text also
+  supports `lineHeight` (multiplier), `letterSpacing` (tracking in pt),
+  `textTransform` (`uppercase`/`lowercase`/`capitalize` — render-time case,
+  re-derives the box), `opacity` (0..1), and `anchor`
+  (`top`/`middle`/`bottom` — which edge pins when the derived height changes,
+  e.g. `bottom` for a total that must end at a fixed baseline). Images
+  support `opacity`, `flipH`/`flipV`, a border (`stroke`/`strokeWidth` (pt)/
+  `strokeStyle`), `filters` (brightness/contrast/saturation/grayscale), and
+  `data.crop` (a normalized source window — see reference/README.md).
 
 ## Before authoring — read these
 
 1. `node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" actions` — the
-   authoritative, live action catalog (types + args shapes); `… design.cjs
-   fonts` — the font catalog.
+   authoritative, live action catalog (types + args shapes).
 2. `${CLAUDE_PLUGIN_ROOT}/skills/design/reference/README.md` — units, naming,
    the sizing contract, table-cell shape, and the stable conventions.
 3. **`${CLAUDE_PLUGIN_ROOT}/skills/design/reference/design-system.md`** — palettes,
    type pairings, spacing, and composition patterns. Read this so the output is
-   distinctive, not a generic blue-on-white default.
+   distinctive and deliberate, not the plain unstyled default.
 4. **`${CLAUDE_PLUGIN_ROOT}/skills/design/reference/gallery/`** — curated example
    designs (invoice, receipt, certificate, report, letter) as ready-to-send
    `actions` arrays. Start from the closest exemplar and adapt it — do not build
@@ -80,9 +87,28 @@ All scripts are invoked as
 
 ## Workflow
 
-1. **Pick an exemplar + a palette.** Read the closest file in `reference/gallery/`
-   and choose a palette/vibe from `reference/design-system.md`. Don't default to
-   blue-on-white.
+0. **Style intent — settle it BEFORE authoring.**
+   - The request carries style signals (a brand color, a logo, the industry,
+     vibe words like "minimal"/"playful"/"formal", a reference document,
+     locale)? → DERIVE the palette + type pairing from them, and say which
+     vibe you chose in your summary so the user can redirect.
+   - NO signals and this is a NEW design? → ask the user ONE short
+     multiple-choice question before creating: 3–4 vibe options spanning
+     warm / cool / minimal, plus "name a brand color" and "surprise me".
+     One question only — never an interrogation.
+   - SKIP asking when: the user said any form of "just make it / you choose",
+     you are EDITING an existing design (keep its palette), or you cannot ask
+     (non-interactive run) — then choose from context and note the choice.
+   - **VARY.** The palette table is unranked; do not habitually reach for the
+     same row, and the same goes for type pairings. With no contextual pull,
+     pick something you haven't used recently. "Surprise me" means a
+     distinctive vibe, not the safest one.
+
+1. **Pick an exemplar; restyle it.** Read the closest file in
+   `reference/gallery/` for STRUCTURE (layout, furniture, sizing recipes) and
+   apply the palette/type from step 0 — do not inherit the exemplar's colors
+   by default. Don't ship the plain unstyled default look; a *deliberate*
+   blue palette is fine.
 
 2. **Create + build in one call** (a new design starts with one blank A4 page;
    pass an initial `actions` array to populate it). Returns `designId` and

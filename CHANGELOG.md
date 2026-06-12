@@ -19,9 +19,34 @@ follows [semantic versioning](https://semver.org); bump `version` in
   too-tall text boxes from the old heuristic safety pad).
 - Gallery exemplars + design-system guidance updated to the new font names
   (`google:source-serif-4` → `"Source Serif 4"`).
+- **Style intent before authoring** — the design skill now derives the
+  palette/type from the user's brand & context, asks ONE short style question
+  when a new design carries no signals, and deliberately varies its choices
+  (no more every-invoice-is-Emerald). Palette table doubled to 10 unranked
+  vibes (warm/earthy/coastal/luxe added), custom brand-color palettes are
+  first-class, and type pairings are now per-vibe. Gallery exemplar palettes
+  are documented as incidental — structure to copy, colors to restyle.
+- Fonts discovery is now lazy: the design-system pairings cover the default
+  path; `design.cjs fonts` is for exploring the full catalog.
 
 ## Unreleased
 
+- **Canva-parity image styling** — images gain `styles.opacity` (0..1),
+  `flipH`/`flipV`, a border (`stroke`/`strokeWidth` in pt/`strokeStyle`),
+  and `filters` `{brightness, contrast, saturation (0..2), grayscale}` —
+  filters are baked into the pixels server-side at render (the PDF engine
+  has no CSS filter support) in lockstep with the canvas preview. New
+  `data.crop` `{x,y,w,h}` (normalized source fractions) reframes an image
+  inside its box (`fit` ignored while set; `null` clears). Image
+  `borderRadius` is documented as a PERCENT (0–100) and now renders
+  identically on canvas and PDF.
+- **Canva-parity text styles** — three new `styles` keys for text elements:
+  `textTransform` (`none`/`uppercase`/`lowercase`/`capitalize` — render-time
+  case; the stored content is never mutated and the derived box accounts for
+  the transformed glyph widths), `opacity` (whole-element transparency 0..1),
+  and `anchor` (`top`/`middle`/`bottom` — which edge stays pinned when the
+  derived text height changes, including dynamic value substitution at
+  generation time). All three are validated server-side with teaching errors.
 - **Actions, not tools** — the authoring surface is now an ordered batch of
   SINGULAR actions (`{type, args}`, one element per action): `add_element`,
   `update_element`, `remove_element`, `reorder_element`, `bind_variable`,
