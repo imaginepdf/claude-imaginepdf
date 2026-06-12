@@ -4,6 +4,22 @@ All notable changes to the ImaginePDF plugin are documented here. The plugin
 follows [semantic versioning](https://semver.org); bump `version` in
 `.claude-plugin/plugin.json` on every release.
 
+## 0.1.0
+
+- **Font catalog discovery** — new `design.cjs fonts` subcommand
+  (`GET /api/v1/fonts`): the deterministic catalog of supported fonts. Font
+  ids are now the PROPER FAMILY NAMES (`"Inter"`, `"DM Sans"`,
+  `"Playfair Display"`) — the legacy `google:<slug>` prefix and the
+  document-safe Helvetica/Times/Courier ids are gone. `styles.fontFamily` is
+  validated server-side (case-insensitive, normalized to canonical casing).
+- **Text spacing styles** — `letterSpacing` (tracking in pt) joins
+  `lineHeight`; both re-derive the text box height server-side.
+- **Exact text sizing** — the server now measures text with real per-glyph
+  font metrics: derived boxes match the rendered PDF/canvas (no more
+  too-tall text boxes from the old heuristic safety pad).
+- Gallery exemplars + design-system guidance updated to the new font names
+  (`google:source-serif-4` → `"Source Serif 4"`).
+
 ## Unreleased
 
 - **Actions, not tools** — the authoring surface is now an ordered batch of

@@ -36,6 +36,12 @@ This returns `{ actions: [ { name, description, args } … ] }`. Build your
 - **Right-aligned text recipe:** give it `maxWidth` and `textAlign:'right'`,
   with `x = rightRail − maxWidth` (e.g. `x = 545 − 200`, `maxWidth: 200`) so
   the right edge is pinned regardless of content length.
+- **Fonts are a catalog:** `styles.fontFamily` is a font NAME from
+  `design.cjs fonts` (`"Inter"`, `"DM Sans"`, `"Source Serif 4"`, …) —
+  case-insensitive, normalized server-side; unknown names are rejected with a
+  teaching error. Text spacing: `lineHeight` (multiplier, default 1.5) and
+  `letterSpacing` (tracking in POINTS, e.g. `1` for spaced-out uppercase
+  eyebrows) — both re-derive the text box height.
 - **Ids are server-minted; address by `name`:** never send an `id` on
   `add_element`. Give each element a unique, meaningful `name` and use
   `{name: "..."}` (or the echoed id) in `update_element` / `remove_element` /

@@ -2,3 +2,7 @@ node_modules/
 
 # Built scripts (scripts/*.cjs) are generated from src/*.ts via esbuild and
 # committed on purpose — the plugin ships them so installs run without a build.
+
+archive/
+tmp/
+

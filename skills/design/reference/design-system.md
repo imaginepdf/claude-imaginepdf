@@ -18,9 +18,13 @@ Use these to build depth (there are NO gradients, NO drop shadows, NO blur):
 - Rounded corners on shapes/images (`borderRadius`) and `fillOpacity` for soft
   tint panels.
 
-Available fonts: document-safe `helvetica`, `arial`, `times`/`times-roman`,
-`georgia`, `courier`; or Google fonts as `google:<slug>` (e.g. `google:inter`,
-`google:poppins`, `google:dm-sans`, `google:source-serif-4`, `google:ibm-plex-mono`).
+Available fonts: the catalog font NAMES served by
+`node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" fonts` (GET /api/v1/fonts) —
+e.g. `"Inter"`, `"Poppins"`, `"DM Sans"`, `"Playfair Display"`,
+`"Source Serif 4"`. The server validates `styles.fontFamily` against the
+catalog (case-insensitive, normalized to the canonical name); anything else is
+rejected. Text also supports `lineHeight` (multiplier, default 1.5) and
+`letterSpacing` (tracking in pt — great for spaced-out uppercase eyebrows).
 
 ## Palettes (pick ONE)
 
@@ -49,8 +53,8 @@ cards; `band` text should be `#FFFFFF` or a near-white.
 | Caption / fine print | 8–9 | regular | `muted` |
 
 Pair at most two families: a strong display/sans for headings + a readable body
-(e.g. `google:poppins` headings + `google:inter` body; or all-`google:dm-sans`;
-or a serif `georgia`/`google:source-serif-4` title + `helvetica` body).
+(e.g. `"Poppins"` headings + `"Inter"` body; or all-`"DM Sans"`;
+or a serif `"Source Serif 4"`/`"Playfair Display"` title + `"Inter"` body).
 
 ## Spacing & grid
 
