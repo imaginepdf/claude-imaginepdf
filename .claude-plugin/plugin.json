@@ -1,20 +1,27 @@
 {
   "name": "imaginepdf",
   "displayName": "ImaginePDF",
-  "description": "Create professional PDFs — invoices, receipts, certificates, reports — with ImaginePDF, right from Claude Code.",
-  "version": "0.0.1",
+  "description": "Create professional PDFs \u2014 invoices, receipts, certificates, reports \u2014 with ImaginePDF, right from Claude Code.",
+  "version": "0.1.0",
   "author": {
     "name": "ImaginePDF"
   },
   "homepage": "https://imaginepdf.com",
   "repository": "https://github.com/imaginepdf/claude-imaginepdf",
   "license": "MIT",
-  "keywords": ["pdf", "invoice", "document", "generation", "template", "imaginepdf"],
+  "keywords": [
+    "pdf",
+    "invoice",
+    "document",
+    "generation",
+    "template",
+    "imaginepdf"
+  ],
   "userConfig": {
     "api_key": {
       "type": "string",
       "title": "ImaginePDF API key",
-      "description": "Workspace key (pc_live_…) from the ImaginePDF dashboard → Settings → API Keys.",
+      "description": "Workspace key (pc_live_\u2026) from the ImaginePDF dashboard \u2192 Settings \u2192 API Keys.",
       "sensitive": true,
       "required": true
     }

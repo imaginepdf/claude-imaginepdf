@@ -41,10 +41,18 @@ the whole batch and the error names the failing action index).
 - If a script returns an error, surface it to the user. Do NOT fall back to an
   alternative approach.
 
+**FONTS ARE A CATALOG — use proper family names:**
+- `styles.fontFamily` takes a font NAME from the catalog (`"Inter"`,
+  `"DM Sans"`, `"Playfair Display"`). List the live catalog with
+  `node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" fonts` — anything not in it
+  is rejected by the server. Text also supports `lineHeight` (multiplier) and
+  `letterSpacing` (tracking in pt).
+
 ## Before authoring — read these
 
 1. `node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" actions` — the
-   authoritative, live action catalog (types + args shapes).
+   authoritative, live action catalog (types + args shapes); `… design.cjs
+   fonts` — the font catalog.
 2. `${CLAUDE_PLUGIN_ROOT}/skills/design/reference/README.md` — units, naming,
    the sizing contract, table-cell shape, and the stable conventions.
 3. **`${CLAUDE_PLUGIN_ROOT}/skills/design/reference/design-system.md`** — palettes,

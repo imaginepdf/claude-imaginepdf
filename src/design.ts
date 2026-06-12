@@ -29,7 +29,7 @@ async function main() {
   const [subcommand, jsonArg] = process.argv.slice(2);
   if (!subcommand) {
     console.error(
-      "Usage: design.cjs <actions|create|get|list|patch|preview|placeholder|upload> '<json>'",
+      "Usage: design.cjs <actions|fonts|create|get|list|patch|preview|placeholder|upload> '<json>'",
     );
     process.exit(1);
   }
@@ -40,6 +40,11 @@ async function main() {
   switch (subcommand) {
     case 'actions': {
       const result = await api.get<unknown>('/api/v1/actions');
+      console.log(JSON.stringify(result));
+      break;
+    }
+    case 'fonts': {
+      const result = await api.get<unknown>('/api/v1/fonts');
       console.log(JSON.stringify(result));
       break;
     }
