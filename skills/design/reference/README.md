@@ -53,7 +53,11 @@ This returns `{ actions: [ { name, description, args } … ] }`. Build your
   omitted and VERIFIED when supplied; invalid content is rejected with the
   rule in the error (see the live catalog for the full rules). The
   human-readable caption is always centered; size it with `styles.fontSize`
-  (pt, default 12) and gap `styles.textMargin` (pt, optional). QR `data` also
+  (pt, default 12) and gap `styles.textMargin` (pt, optional) — an oversized
+  caption is clamped at render to fit the element width. Barcode `w`/`h` are
+  free and parametric: bars + quiet zones fill the width (more characters =
+  denser bars; keep the element wide enough to scan), and bars fill the
+  height above the caption. QR `data` also
   takes `errorCorrectionLevel` (L/M/Q/H) and `margin` (quiet-zone modules).
 - **Table cells (strict):** `data.cells` = a 2-D array. Each cell is EITHER a
   plain string (→ a text cell) OR a canonical envelope `{ type, data, styles? }`
