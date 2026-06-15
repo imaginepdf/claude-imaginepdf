@@ -2,7 +2,7 @@
   "name": "imaginepdf",
   "displayName": "ImaginePDF",
   "description": "Create professional PDFs \u2014 invoices, receipts, certificates, reports \u2014 with ImaginePDF, right from Claude Code.",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "author": {
     "name": "ImaginePDF"
   },

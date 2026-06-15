@@ -1,12 +1,12 @@
 {
-  "_note": "Exemplar: compact payment receipt, Emerald palette. The palette here is INCIDENTAL — the exemplar demonstrates structure; restyle to the palette chosen in the style-intent step unless the user asked for this exact look. Narrow content column, a 'PAID' chip, a totals line. Text has NO w/h (maxWidth only where wrapped or right-aligned); the table is grid-driven via columnWidths. The last table row shows the ENVELOPE cell shape ({type, data, styles?} — here a CODE128 barcode cell); plain strings are text cells. Bound elements carry the variable name as their element name. Adapt copy/variables; preview and revise.",
+  "_note": "Exemplar: compact payment receipt, Emerald palette. The palette here is INCIDENTAL — the exemplar demonstrates structure; restyle to the palette chosen in the style-intent step unless the user asked for this exact look. Use `name` for `design.cjs create` to get a designId, then send `actions` as the first `design.cjs patch`. Narrow content column, a 'PAID' chip, a totals line. Text has NO w/h (maxWidth only where wrapped or right-aligned); the table is grid-driven via columnWidths. The last table row shows the ENVELOPE cell shape ({type, data, styles?} — here a CODE128 barcode cell); plain strings are text cells. Bound elements carry the variable name as their element name. Adapt copy/variables; preview and revise.",
   "name": "Receipt",
   "actions": [
     { "type": "add_element", "args": { "type": "shape", "name": "band", "position": { "x": 0, "y": 0, "w": 595.28, "h": 96 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#0E3B2E" } } },
     { "type": "add_element", "args": { "type": "shape", "name": "accent_rule", "position": { "x": 0, "y": 96, "w": 595.28, "h": 3 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#10B981" } } },
-    { "type": "add_element", "args": { "type": "text", "name": "store", "position": { "x": 50, "y": 34 }, "data": { "content": "Greenleaf Coffee" }, "styles": { "fontFamily": "Poppins", "fontSize": 20, "bold": true, "color": "#FFFFFF", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "store", "position": { "x": 50, "y": 34 }, "data": { "content": "Greenleaf Coffee" }, "styles": { "fontFamily": "Poppins", "fontSize": 20, "fontWeight": 700, "color": "#FFFFFF", "textAlign": "left" } } },
     { "type": "add_element", "args": { "type": "text", "name": "store_address", "position": { "x": 50, "y": 64 }, "data": { "content": "14 Garden Lane · (555) 010-2233" }, "styles": { "fontFamily": "Inter", "fontSize": 9, "color": "#A7F3D0", "textAlign": "left" } } },
-    { "type": "add_element", "args": { "type": "text", "name": "receipt_label", "position": { "x": 345, "y": 40, "maxWidth": 200 }, "data": { "content": "RECEIPT" }, "styles": { "fontFamily": "Inter", "fontSize": 12, "bold": true, "color": "#FFFFFF", "textAlign": "right" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "receipt_label", "position": { "x": 345, "y": 40, "maxWidth": 200 }, "data": { "content": "RECEIPT" }, "styles": { "fontFamily": "Inter", "fontSize": 12, "fontWeight": 700, "color": "#FFFFFF", "textAlign": "right" } } },
     { "type": "add_element", "args": { "type": "text", "name": "receipt_meta", "position": { "x": 345, "y": 60, "maxWidth": 200 }, "data": { "content": "# R-4821 · 7 Jun 2026" }, "styles": { "fontFamily": "Inter", "fontSize": 9, "color": "#A7F3D0", "textAlign": "right" } } },
 
     { "type": "add_element", "args": { "type": "table", "name": "line_items", "position": { "x": 50, "y": 140 }, "data": { "rows": 5, "columns": 3, "columnWidths": [180, 50, 90], "template": "minimal", "cells": [
@@ -18,11 +18,11 @@
     ] } } },
 
     { "type": "add_element", "args": { "type": "shape", "name": "total_rule", "position": { "x": 50, "y": 300, "w": 320, "h": 1 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#D1FAE5" } } },
-    { "type": "add_element", "args": { "type": "text", "name": "total_label", "position": { "x": 50, "y": 312 }, "data": { "content": "TOTAL" }, "styles": { "fontFamily": "Inter", "fontSize": 12, "bold": true, "color": "#0B1B14", "textAlign": "left" } } },
-    { "type": "add_element", "args": { "type": "text", "name": "total", "position": { "x": 210, "y": 310, "maxWidth": 160 }, "data": { "content": "$12.50" }, "styles": { "fontFamily": "Poppins", "fontSize": 16, "bold": true, "color": "#0E3B2E", "textAlign": "right" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "total_label", "position": { "x": 50, "y": 312 }, "data": { "content": "TOTAL" }, "styles": { "fontFamily": "Inter", "fontSize": 12, "fontWeight": 700, "color": "#0B1B14", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "total", "position": { "x": 210, "y": 310, "maxWidth": 160 }, "data": { "content": "$12.50" }, "styles": { "fontFamily": "Poppins", "fontSize": 16, "fontWeight": 700, "color": "#0E3B2E", "textAlign": "right" } } },
 
     { "type": "add_element", "args": { "type": "shape", "name": "paid_chip", "position": { "x": 50, "y": 350, "w": 92, "h": 26 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#ECFDF5", "stroke": "#10B981", "strokeWidth": 1, "borderRadius": 13 } } },
-    { "type": "add_element", "args": { "type": "text", "name": "paid_text", "position": { "x": 50, "y": 357, "maxWidth": 92 }, "data": { "content": "PAID" }, "styles": { "fontFamily": "Inter", "fontSize": 10, "bold": true, "color": "#10B981", "textAlign": "center" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "paid_text", "position": { "x": 50, "y": 357, "maxWidth": 92 }, "data": { "content": "PAID" }, "styles": { "fontFamily": "Inter", "fontSize": 10, "fontWeight": 700, "color": "#10B981", "textAlign": "center" } } },
 
     { "type": "add_element", "args": { "type": "text", "name": "footer", "position": { "x": 50, "y": 410 }, "data": { "content": "Thank you — see you again soon!" }, "styles": { "fontFamily": "Inter", "fontSize": 9, "color": "#5B6B63", "textAlign": "left" } } },
 

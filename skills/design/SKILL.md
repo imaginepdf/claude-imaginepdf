@@ -6,16 +6,19 @@ allowed-tools: Bash(node *), Read
 
 # ImaginePDF — Design
 
-You build a design by sending **actions** through the ImaginePDF API. Each
-action is `{ type, args }` and does ONE thing — add one element, update one
-element, bind one variable. The server (pdftreejs — the action authority) folds
-your batch over the design tree one action at a time (`tree + action → tree`)
-and persists the result. You never construct raw tree JSON — you describe
-intent with actions.
+Creating a design and authoring it are TWO separate steps. First `create` the
+design — that only allocates it (name + optional description) and returns a
+`designId`. Then build it by sending **actions** to `patch`. Each action is
+`{ type, args }` and does ONE thing — add one element, update one element, bind
+one variable. The server (pdftreejs — the action authority) folds your batch
+over the design tree one action at a time (`tree + action → tree`) and persists
+the result. You never construct raw tree JSON — you describe intent with actions.
 
-Send MANY actions per request: both `create` and `patch` take an ordered
-`actions` array, applied sequentially and **atomically** (any failure rejects
-the whole batch and the error names the failing action index).
+Send MANY actions per `patch` request: it takes an ordered `actions` array,
+applied sequentially and **atomically** (any failure rejects the whole batch
+and the error names the failing action index). `create` does NOT take
+`actions` — sending them is rejected; author through `patch`. A failed `patch`
+changes nothing, so just retry it against the SAME `designId` — never re-create.
 
 **SIZING IS DERIVED — the core contract:**
 - **text**: `position` is `{x, y, maxWidth?}`. NEVER send `w`/`h` — the server
@@ -46,15 +49,44 @@ the whole batch and the error names the failing action index).
   `"DM Sans"`, `"Playfair Display"`) — anything else is rejected by the
   server. The pairings in `design-system.md` cover the default path; run
   `node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" fonts` only when you want
-  the full catalog (a rejection error also points you there). Text also
-  supports `lineHeight` (multiplier), `letterSpacing` (tracking in pt),
-  `textTransform` (`uppercase`/`lowercase`/`capitalize` — render-time case,
-  re-derives the box), `opacity` (0..1), and `anchor`
-  (`top`/`middle`/`bottom` — which edge pins when the derived height changes,
-  e.g. `bottom` for a total that must end at a fixed baseline). Images
-  support `opacity`, `flipH`/`flipV`, a border (`stroke`/`strokeWidth` (pt)/
-  `strokeStyle`), `filters` (brightness/contrast/saturation/grayscale), and
+  the full catalog (a rejection error also points you there). Weight/style are
+  CSS: `fontWeight` (numeric — 400 normal, 700 bold), `fontStyle`
+  (`normal`/`italic`), `textDecorationLine`
+  (`none`/`underline`/`line-through`/`underline line-through`) with optional
+  `textDecorationColor`/`textDecorationThickness` (pt), and `textShadows` — an
+  array of glyph (text) shadow layers, each `{dx, dy, blur (pt), color (#hex),
+  opacity 0..1}` (no spread; CSS text-shadow has none), e.g. `[{ "dx": 1, "dy":
+  1, "blur": 2, "color": "#000000", "opacity": 0.5 }]`. Text also supports `lineHeight`
+  (multiplier), `letterSpacing` (tracking in pt), `textTransform`
+  (`uppercase`/`lowercase`/`capitalize` — render-time case, re-derives the box),
+  `opacity` (0..1), `anchor` (`top`/`middle`/`bottom` — which edge pins when the
+  derived height changes, e.g. `bottom` for a total that must end at a fixed
+  baseline), and `padding` (pt — the chip inset; box grows by the insets;
+  per-side `paddingTop`/`paddingRight`/`paddingBottom`/`paddingLeft`; pair with
+  `backgroundColor` + `borderRadius` + `shadows` for "Paid"-style badges). Most elements
+  take corner rounding — `borderRadius` (all corners) plus per-corner
+  `borderTopLeftRadius`/`borderTopRightRadius`/`borderBottomRightRadius`/`borderBottomLeftRadius`
+  (pt; PERCENT 0–100 on image) — a box border `borderWidth` (pt)/`borderColor`/
+  `borderStyle` (`solid|dashed|dotted|double|none`) on text/image/qr/barcode,
+  and a `shadows` array of `{dx,dy,blur,color,opacity}` layers (one entry = a
+  tasteful lift; see reference/README.md). Shapes use SVG `stroke`/`strokeWidth` (pt)/
+  `strokeStyle` + `fill` instead. Images additionally support `opacity`,
+  `flipH`/`flipV`, `filters` (brightness/contrast/saturation/grayscale), and
   `data.crop` (a normalized source window — see reference/README.md).
+
+**FILLS, DEPTH, LINKS:** any fill — text/qr/barcode/cell `backgroundColor`, shape
+`fill`, the page background — accepts a **gradient** object
+(`{type:'linear'|'radial', angle?, stops:[{offset,color,opacity?}]}`), not just a
+hex. Drop shadows are a `shadows` array (`{dx,dy,blur,spread,color,opacity}`); one
+subtle layer lifts an anchor. Any element, a whole table, and individual table
+cells take an `href` (https/http/mailto/tel) for clickable links.
+
+**PAGE / DOCUMENT BACKGROUND:** set a page's backdrop with `set_page_background`
+(`{ page, backgroundColor?, backgroundImage?, backgroundSize? }`) or the document
+default (cascades to pages) with `set_document_background` — flat CSS longhands,
+merged per-field, a field set to `null` clears it. `backgroundColor` is a hex or a
+gradient; `backgroundImage` is an image src (assets:/data:/https:) sized by
+`backgroundSize` (`cover`/`contain`/`fill`). `add_page` accepts the same keys.
 
 ## Before authoring — read these
 
@@ -78,7 +110,7 @@ All scripts are invoked as
 | Subcommand | What it does |
 | --- | --- |
 | `design.cjs actions` | live authoring action catalog |
-| `design.cjs create '{"name":"…","actions":[…]}'` | create + populate in one call |
+| `design.cjs create '{"name":"…","description":"…"}'` | allocate an empty design, returns `designId` |
 | `design.cjs patch '{"designId":"…","actions":[…]}'` | apply an action batch / rename / describe |
 | `design.cjs get '{"designId":"…"}'` | full tree + bound variables |
 | `design.cjs preview '{"designId":"…","page":0}'` | render a page to a PNG you can read |
@@ -110,14 +142,20 @@ All scripts are invoked as
    by default. Don't ship the plain unstyled default look; a *deliberate*
    blue palette is fine.
 
-2. **Create + build in one call** (a new design starts with one blank A4 page;
-   pass an initial `actions` array to populate it). Returns `designId` and
-   per-action `results` — each with the minted id and the **derived box**:
+2. **Create the design** — this only allocates it and returns a `designId`
+   (a new design starts with one blank A4 page). No actions here.
    ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" create '{"name":"Invoice","actions":[
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" create '{"name":"Invoice","description":"Standard invoice"}'
+   ```
+
+3. **Build it with a first `patch`** — send your whole layout as one ordered
+   `actions` array against the `designId` from step 2. Returns per-action
+   `results`, each with the minted id and the **derived box**:
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" patch '{"designId":"<id>","actions":[
      {"type":"add_element","args":{"type":"text","name":"title",
       "position":{"x":50,"y":50},
-      "data":{"content":"Invoice #1042"},"styles":{"fontSize":24,"bold":true}}},
+      "data":{"content":"Invoice #1042"},"styles":{"fontSize":24,"fontWeight":700}}},
      {"type":"add_element","args":{"type":"table","name":"items",
       "position":{"x":50,"y":120},
       "data":{"rows":4,"columns":4,"columnWidths":[235,60,100,100],
@@ -126,13 +164,15 @@ All scripts are invoked as
    ]}'
    ```
    Note: no `w`/`h` on the text or table — the server sizes them. A later action
-   may reference an element added earlier in the same batch, by `name`.
+   may reference an element added earlier in the same batch, by `name`. If the
+   batch fails, fix it and re-run `patch` against the SAME `designId` — the
+   failure persisted nothing, so don't create a new design.
 
-3. **Refine** with `patch` (e.g. `update_element` to set table cells, restyle,
-   or move things). Text re-derives its box when content / maxWidth / metric
-   styles change; tables re-derive on any data change.
+4. **Refine** with further `patch` calls (e.g. `update_element` to set table
+   cells, restyle, or move things). Text re-derives its box when content /
+   maxWidth / metric styles change; tables re-derive on any data change.
 
-4. **Preview and revise — do this, don't skip it.** Render the page and LOOK at
+5. **Preview and revise — do this, don't skip it.** Render the page and LOOK at
    it:
    ```bash
    node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" preview '{"designId":"<id>"}'
@@ -141,15 +181,28 @@ All scripts are invoked as
    own layout: alignment, spacing rhythm, contrast, hierarchy, overflow, balance.
    `patch` to fix what's off and preview again. Iterate until it looks crisp.
 
-5. **Verify** with `get` before handing off.
+6. **Verify** with `get` before handing off.
 
 ## Images and placeholders
 
 You cannot see the user's local files, and the design references images by an
-`assets:<id>` URN. Two paths:
+`assets:<id>` URN. Three paths:
 
 - **The user gave you an image path** → `design.cjs upload '{"file":"/path/logo.png","name":"Logo"}'`.
   Use the returned `ref` (`assets:<id>`) as an image element's `data.src`.
+- **Authoring artwork (logos, icons, illustrations) — write SVG.**
+  NEVER compose a logo or icon out of shape elements — shapes are layout
+  furniture (bands, rules, panels), not artwork; a shape collage pollutes the
+  element list and can't be replaced by the real logo later. SVG is the
+  native medium: crisp at any size, palette-matched, and it renders on the
+  canvas, in thumbnails, AND in the PDF. Upload inline markup directly:
+  ```bash
+  node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" upload '{"svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\">…</svg>","name":"Logo"}'
+  ```
+  Use the returned `ref` as the image's `data.src` (the asset is replaceable
+  in place later, exactly like a placeholder). A TINY mark (<2KB) may also go
+  straight into `data.src` as `data:image/svg+xml;base64,…` — the server
+  auto-converts large inline payloads into assets.
 - **You need an image the user hasn't supplied yet** → mint a placeholder:
   ```bash
   node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" placeholder '{"name":"Company logo","label":"LOGO","width":200,"height":80}'
@@ -162,11 +215,12 @@ You cannot see the user's local files, and the design references images by an
 
 ## Guidance
 
-- Always create with a meaningful design `name` first, and give every element a
-  unique, meaningful element `name`.
-- Lay out the whole page as ONE ordered `actions` array when you can — paint
-  order follows action order (later = on top; fix mistakes with
-  `reorder_element`).
+- Always `create` with a meaningful design `name` first to get a `designId`,
+  then send the layout via `patch`; give every element a unique, meaningful
+  element `name`.
+- Lay out the whole page as ONE ordered `actions` array in your first `patch`
+  when you can — paint order follows action order (later = on top; fix mistakes
+  with `reorder_element`).
 - Build top-to-bottom; budget vertical space as `fontSize × lineHeight` per text
   line and keep a consistent spacing rhythm (see `design-system.md`).
 - Tables: one `add_element` carries the whole thing — structure

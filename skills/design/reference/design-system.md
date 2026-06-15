@@ -7,21 +7,33 @@ Pick a vibe per document — derived from the brand/context or the user's answer
 to the style question (see the skill's step 0), never out of habit. Don't ship
 the plain unstyled default; a *deliberate* blue palette is fine.
 
-## What the renderer can and can't do
+## What the renderer can do — build deliberate depth
 
-Use these to build depth (there are NO gradients, NO drop shadows, NO blur):
+The renderer supports real **gradients**, **drop shadows**, and **text shadows**.
+Use them DELIBERATELY (one or two accents per page) — the strongest "designed"
+signals are still structure + restraint, with an effect or two for polish:
 
 - A **dark header band** (a filled `shape` rectangle spanning the page width) with
-  light text on top — the single biggest "designed" signal.
+  light text on top — the single biggest "designed" signal. Fill it flat with
+  `band`, or with a subtle **gradient** for extra polish: shape `fill` (and text/
+  cell/page `backgroundColor`) accept a gradient object —
+  `{ "type": "linear", "angle": 135, "stops": [{ "offset": 0, "color": "#5C1A2A" }, { "offset": 1, "color": "#B3324B" }] }`.
 - A **thin accent rule** (a 2–4 pt tall filled rectangle, or a `line` shape) under
   the header or between sections.
+- A **soft drop shadow** to lift ONE anchor (a totals box, a section card) off the
+  page: `"shadows": [{ "dy": 2, "blur": 6, "color": "#000000", "opacity": 0.18 }]` —
+  one subtle layer on the anchor, never on every element.
 - **Generous whitespace** and tight alignment to an invisible grid.
 - **One** bold accent color, used sparingly (section labels, totals, a rule).
-- Rounded corners on shapes/images (`borderRadius`) and `fillOpacity` for soft
-  tint panels.
+- Rounded corners on shapes/images (`borderRadius`), `fillOpacity` for soft tint
+  panels, and a **full-page tint** behind everything via `set_page_background`
+  (`{ "page": 0, "backgroundColor": "#FAF7F2" }` — a hex or a gradient; an image
+  background uses `backgroundImage` + `backgroundSize`).
+- **Real artwork is an SVG image asset** (`design.cjs upload {"svg": …}`) —
+  never a cluster of shape elements. Shapes build STRUCTURE; images carry ART.
 - Image polish: `data.crop` to reframe a photo without re-uploading,
   `grayscale: true` + low `opacity` for watermark-style background imagery,
-  a hairline `stroke` (0.75–1pt, muted color) to seat photos on white, and
+  a hairline border (`borderWidth` 0.75–1pt + muted `borderColor`) to seat photos on white, and
   `flipH` to point a subject INTO the page instead of off it.
 
 Available fonts: the catalog font NAMES served by
@@ -136,7 +148,8 @@ The full catalog (more serifs, handwriting, display faces) is one call away:
 - DON'T use more than two font families or more than one accent color.
 - DON'T reuse the same palette/pairing across unrelated documents out of
   habit — every document gets a deliberate, context-fitting choice.
-- DON'T rely on effects the renderer ignores (gradients/shadows) — fake depth with
-  bands, rules, tint panels, and whitespace.
+- DON'T overdo depth: gradients and drop shadows ARE available, but ONE subtle
+  gradient or shadow per page reads as designed — on everything it reads as gaudy.
+  Bands, rules, tint panels, and whitespace still carry most of the structure.
 
 **Always `preview` and Read the PNG, then revise.** Judge it as a designer would.

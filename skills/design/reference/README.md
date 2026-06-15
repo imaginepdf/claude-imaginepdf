@@ -10,7 +10,8 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" actions
 ```
 
 This returns `{ actions: [ { name, description, args } … ] }`. Build your
-`design.cjs create` / `patch` calls from that.
+`design.cjs patch` calls from that (`create` only allocates the design — it
+takes no actions).
 
 ## Quick cheat-sheet (the stable bits)
 
@@ -52,6 +53,27 @@ This returns `{ actions: [ { name, description, args } … ] }`. Build your
   when a bound variable's substituted value is taller/shorter at generation
   time (`bottom` grows upward; upward growth is not collision-checked against
   content above).
+- **Text chips (badge look):** `padding` (pt, uniform) insets the glyphs and
+  GROWS the derived box by 2×padding on both axes (wrap width shrinks
+  accordingly); pair it with `backgroundColor` + `borderRadius` + `shadows` for a
+  "Paid"-style badge.
+- **Corner rounding, border & shadows (most elements):** `borderRadius` rounds
+  all corners; per-corner `borderTopLeftRadius`/`borderTopRightRadius`/`borderBottomRightRadius`/`borderBottomLeftRadius`
+  override individually — POINTS on text/table/qr/barcode/shape, PERCENT (0–100)
+  on image. A box border on text/image/qr/barcode is `borderWidth` (pt)/`borderColor`/`borderStyle`
+  (`solid|dashed|dotted|double|none`); shapes use SVG `stroke`/`strokeWidth`/`strokeStyle`
+  plus `fill`/`fillOpacity` (the fill-paint alpha, distinct from whole-element `opacity`
+  which fades fill + stroke + shadow). `shadows`
+  is an array of drop-shadow layers, each `{dx, dy, blur, spread (pt), color (#hex, NO alpha), opacity 0..1}`,
+  on text/image/qr/barcode/shape(rect+circle)/table —
+  replaced WHOLESALE on update; layer defaults dx 0, dy 2, blur 6, opacity 0.3 (a
+  tasteful "lift"); rendered identically on canvas and PDF (the PDF bakes it
+  — the engine has no CSS box-shadow).
+- **Gradients & links:** any fill — text/qr/barcode/cell `backgroundColor`, shape
+  `fill`, the page background — accepts a gradient object
+  `{type:'linear'|'radial', angle?, stops:[{offset (0..1), color, opacity?}]}` as
+  well as a hex. An `href` (https/http/mailto/tel) makes any element, the whole
+  table, or an individual table cell a clickable link.
 - **Ids are server-minted; address by `name`:** never send an `id` on
   `add_element`. Give each element a unique, meaningful `name` and use
   `{name: "..."}` (or the echoed id) in `update_element` / `remove_element` /
@@ -60,17 +82,47 @@ This returns `{ actions: [ { name, description, args } … ] }`. Build your
 - **Paint order:** action order — later elements draw on top. Add background
   shapes before the text on them; fix mistakes with
   `reorder_element {name, to: front|back|forward|backward|index}`.
+- **Image sources (strict grammar):** `data.src` is `assets:<id>` (from
+  `upload`/`placeholder`), `data:image/png|jpeg|webp|svg+xml;base64,…`
+  (inline; payloads >128KB are auto-converted to assets), or `https://…`
+  (fetched ONCE server-side and frozen into an asset — the PDF can never
+  change because a remote image did). Anything else is rejected. Page/document
+  backgrounds use FLAT CSS longhands (no nested object) — `backgroundColor`
+  (color or gradient), `backgroundImage` (the src, same grammar), `backgroundSize`
+  (cover|contain|fill) — on `add_page` / `set_page_background` / `set_document_background`.
 - **Element kinds:** `text`, `image` (needs `data.src`), `qr`, `barcode`,
   `shape` (`data.shapeType`: rectangle/circle/line/arrow), `table`
   (`data.rows/columns/columnWidths/width/template/headerRow/headerColumn/cells`).
-- **Image styling:** `styles` supports `fit`, `borderRadius` (PERCENT 0–100;
-  50 on a square = circle), `opacity` (0..1), `flipH`/`flipV` (booleans),
-  `stroke`/`strokeWidth` (POINTS, drawn inside the box)/`strokeStyle`
-  (solid|dashed|dotted), and `filters` `{brightness, contrast, saturation
+- **Table styling:** `borderMode` picks which lines draw —
+  `all|none|horizontal|outer|inner|inner-horizontal|vertical|inner-vertical`
+  — composed with `borderColor`/`borderWidth` (pt)/`borderStyle`
+  (solid|dashed|dotted). `borderSpacing` (pt) gaps the cells; `tableSpacing`
+  (pt) is the OUTER gap between the table box edge and the grid (the box
+  grows by 2×tableSpacing). `banding` `{evenColor, oddColor}` zebra-fills
+  body rows below explicit fills; `opacity` (0..1) fades the whole table.
+  `borderRadius` (pt; all corners, or per-corner `borderTopLeftRadius` …) rounds the table CARD — it
+  clips fills at the box edge (visible grid rounding needs
+  radius > tableSpacing) and, for the closed-outline modes (`all` without
+  borderSpacing, `outer`), the outline draws as a rounded ring; `shadows` lift
+  the whole table. A table and individual cells can carry an `href` link.
+  Cell styles in the `cells` grid also accept `textTransform`
+  (none|uppercase|lowercase|capitalize — row heights account for the
+  transformed text), `letterSpacing` (pt) and `lineHeight`.
+- **QR/Barcode extras:** both accept `opacity` (0..1), `rotate`,
+  `borderRadius` (pt — rounds the code card; modest radii only eat the baked
+  quiet zone, oversized ones clip the symbol) and `shadows`. QR
+  `data.margin` is the quiet zone in MODULES (default 4); barcode
+  `textMargin` (pt) is the gap between bars and caption.
+- **Image styling:** `styles` supports `objectFit`, `borderRadius` (PERCENT 0–100;
+  50 on a square = circle; all corners, or per-corner
+  `borderTopLeftRadius` … `borderBottomLeftRadius`), `shadows` (see the
+  corner/border/shadow bullet), `opacity` (0..1), `flipH`/`flipV` (booleans),
+  `borderWidth` (POINTS, drawn inside the box)/`borderColor`/`borderStyle`
+  (solid|dashed|dotted|double|none), and `filters` `{brightness, contrast, saturation
   (0..2, 1 = neutral), grayscale (boolean)}` — the filters object is replaced
   wholesale on update. `data.crop` `{x,y,w,h}` is a NORMALIZED source window
   (fractions 0..1, `x+w ≤ 1`, `y+h ≤ 1`): the window fills the box exactly
-  and `fit` is ignored while set; `crop: null` clears it on update.
+  and `objectFit` is ignored while set; `crop: null` clears it on update.
 - **Barcode formats (strict):** `CODE128` (default, any ASCII), `CODE39`
   (digits/letters/space/`- . $ / + %`), `EAN13` (12–13 digits), `EAN8` (7–8),
   `UPC` (11–12), `ITF14` (13–14 digits) — GTIN check digits are computed when
@@ -99,9 +151,11 @@ This returns `{ actions: [ { name, description, args } … ] }`. Build your
   bound field is derived from the element type (text→content, image→src,
   qr/barcode→content, table→cells). So name elements the way you want the
   dataset columns named, BEFORE binding.
-- **Atomicity:** a `create`/`patch` call is all-or-nothing — if any action
-  fails, the whole call is rejected, nothing is saved, and the error names the
-  failing action index (`actions[3] (add_element) failed: …`).
+- **Atomicity:** a `patch` call is all-or-nothing — if any action fails, the
+  whole call is rejected, nothing is saved, and the error names the failing
+  action index (`actions[3] (add_element) failed: …`). A failed `patch` leaves
+  the design untouched, so retry against the same `designId` (`create` takes no
+  actions, so there's nothing to be atomic about there).
 - **Sample content matters:** the derived text box is measured from the
   design-time content. For bound fields, author representative sample values
   (e.g. `"$1,234.50"`, a realistic name) so generated values fit the box.

@@ -2,7 +2,7 @@
  * design.cjs — author ImaginePDF designs via the public `/api/v1` surface.
  *
  *   actions                                — list the authoring action catalog
- *   create  '{"name":"Invoice","description":"…","actions":[{"type":"…","args":{…}}]}'
+ *   create  '{"name":"Invoice","description":"…"}'   — allocate a design, returns designId
  *   get     '{"designId":"…"}'
  *   list    '{}'
  *   patch   '{"designId":"…","name":"…","description":"…","actions":[{"type":"…","args":{…}}]}'
@@ -11,12 +11,15 @@
  *   upload  '{"file":"/path/logo.png","name":"Logo"}'             — add a new image asset
  *   upload  '{"file":"/path/logo.png","assetId":"<placeholder-id>"}' — replace in place
  *
- * The `patch` subcommand is how a design is built/edited: it sends an ordered
- * batch of ACTIONS (`add_element` / `update_element` / `remove_element` /
+ * Creation and authoring are SEPARATE: `create` only allocates the design
+ * (name + optional description) and returns a `designId`. The `patch`
+ * subcommand is how a design is built/edited: it sends an ordered batch of
+ * ACTIONS (`add_element` / `update_element` / `remove_element` /
  * `reorder_element` / `bind_variable` / `add_page` / …). Each action operates
  * on ONE element; the server (pdftreejs, the action authority) folds them over
  * the design tree one by one (`tree + action → tree`) and persists the result
- * atomically. Run `actions` first to get the authoritative catalog + args shapes.
+ * atomically. `create` does NOT accept actions — sending them is rejected.
+ * Run `actions` first to get the authoritative catalog + args shapes.
  */
 
 import { readFile } from 'node:fs/promises';
@@ -49,11 +52,13 @@ async function main() {
       break;
     }
     case 'create': {
+      // Create only ALLOCATES the design (name + optional description) and
+      // returns a designId. Authoring is separate — send your layout as an
+      // action batch via `patch`. The server rejects `actions` on create.
       if (!args.name) throw new Error('name is required');
       const result = await api.post<unknown>('/api/v1/designs', {
         name: args.name,
         ...(args.description !== undefined ? { description: args.description } : {}),
-        ...(args.actions !== undefined ? { actions: args.actions } : {}),
       });
       console.log(JSON.stringify(result));
       break;
@@ -113,13 +118,29 @@ async function main() {
       break;
     }
     case 'upload': {
-      // Upload a local image. With `assetId`, replaces that asset's bytes in
-      // place (the assets:<id> ref is unchanged — no rebind). Without it,
-      // creates a new asset and returns its ref.
-      if (!args.file) throw new Error('file (local path) is required');
-      const buf = await readFile(args.file);
+      // Upload an image. Sources: `file` (local path) or `svg` (inline SVG
+      // markup — authored artwork without a temp file). With `assetId`,
+      // replaces that asset's bytes in place (the assets:<id> ref is
+      // unchanged — no rebind). Without it, creates a new asset and returns
+      // its ref.
+      if (!args.file && !args.svg) throw new Error('file (local path) or svg (inline markup) is required');
+      const MIME_BY_EXT: Record<string, string> = {
+        png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg',
+        webp: 'image/webp', svg: 'image/svg+xml',
+      };
+      let blob: Blob;
+      let filename: string;
+      if (args.svg) {
+        blob = new Blob([String(args.svg)], { type: 'image/svg+xml' });
+        filename = `${String(args.name || 'artwork').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.svg`;
+      } else {
+        const buf = await readFile(args.file);
+        filename = basename(args.file);
+        const ext = filename.split('.').pop()?.toLowerCase() ?? '';
+        blob = new Blob([buf], { type: MIME_BY_EXT[ext] ?? 'application/octet-stream' });
+      }
       const form = new FormData();
-      form.append('file', new Blob([buf]), basename(args.file));
+      form.append('file', blob, filename);
       if (args.name) form.append('name', String(args.name));
       const result = args.assetId
         ? await api.putForm<unknown>(

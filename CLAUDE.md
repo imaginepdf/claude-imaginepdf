@@ -45,11 +45,11 @@ Plugin → the ImaginePDF API over HTTP with `X-API-Key`. The workspace is resol
 server-side from the key — the plugin never sends a workspace id. All calls hit
 the versioned, API-key-only public surface:
 
-- `POST  /api/v1/designs` — create a design
+- `POST  /api/v1/designs` — create a design (name + optional description →
+  `designId`). Allocation only; it does NOT accept `actions` (sending them is
+  rejected). Authoring is a separate concern — see PATCH below.
 - `GET   /api/v1/designs` — list designs
 - `GET   /api/v1/designs/:id` — get a design + tree
-- `POST  /api/v1/designs` also accepts an optional initial `actions[]` to
-  create-and-populate in one request
 - `PATCH /api/v1/designs/:id` — apply an ordered batch of authoring **actions**
   and/or rename/describe. Each action is `{type, args}` and SINGULAR (one
   element / one binding / one page op): `add_element`, `update_element`,

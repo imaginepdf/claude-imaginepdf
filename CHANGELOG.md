@@ -4,6 +4,84 @@ All notable changes to the ImaginePDF plugin are documented here. The plugin
 follows [semantic versioning](https://semver.org); bump `version` in
 `.claude-plugin/plugin.json` on every release.
 
+## 0.8.0
+
+- **Docs teach the full current capability set.** The hand-written design guidance
+  was out of date — it claimed "there are NO gradients, NO drop shadows" (both have
+  shipped). Corrected and expanded: gradient fills (`backgroundColor`/shape `fill`/
+  page background accept a `{type,angle,stops}` gradient), drop shadows (`shadows[]`),
+  structured text shadows (`textShadows[]`), `href` links on any element/table/cell,
+  and `set_page_background`/`set_document_background`/`add_page` flat background keys
+  are now taught in SKILL.md + design-system.md + reference/README.md, with gallery
+  exemplars (a soft shadow on the invoice totals box, a gradient header band in the
+  report). Also fixed stale `fit`→`objectFit` and singular `shadow`→`shadows` in the
+  reference. The live action catalog already served all of this; this aligns the
+  taste/teaching docs so designs actually use it.
+
+## 0.7.0
+
+- **Flat page/document backgrounds.** Page and document backgrounds are now FLAT
+  CSS longhands instead of a nested `background {color, image {src, objectFit}}`
+  object: `backgroundColor` (color or gradient), `backgroundImage` (the image src),
+  `backgroundSize` (cover|contain|fill — the correct CSS property; object-fit is for
+  `<img>`). On `add_page` / `set_page_background` / `set_document_background`; set a
+  field to `null` to clear just that longhand. The nested shape is rejected.
+
+## 0.6.0
+
+- **Structured text shadows.** The glyph text-shadow style key `textShadow` (a
+  raw CSS string) is now `textShadows` — an array of structured layers, each
+  `{dx, dy, blur (pt), color (#hex), opacity 0..1}` (no spread; CSS text-shadow
+  has none), mirroring the element drop-shadow `shadows[]`. Points-only and
+  scale-aware (a text shadow now scales with page-fit, like every other length).
+  The live action catalog reflects this; the old CSS-string form is rejected.
+
+## 0.5.0
+
+- **More CSS-aligned style keys + new capabilities.** The qr/barcode/cell
+  foreground color key `fgColor` is now `color` (one "foreground ink" name across
+  text/icon/qr/barcode/cell). Page/document background `objectFit` drops the
+  non-CSS `stretch` value for the CSS `fill`. Shapes gain a whole-element
+  `opacity` (fades fill + stroke + shadow) distinct from `fillOpacity` (now the
+  SVG fill paint alpha only — the stroke stays opaque). Hyperlinks (`href`) now
+  apply to a whole table and to individual table cells, not just leaf elements.
+  The live action catalog (`design.cjs actions`) reflects all of this; old key
+  names/values are rejected.
+
+## 0.4.0
+
+- **More CSS-aligned style keys.** Continuing the CSS naming pass: `bgColor` →
+  `backgroundColor`, the image/background `fit` → `objectFit`, `rotation` →
+  `rotate`, and table `cellSpacing` → `borderSpacing`. The element drop shadow is
+  now a single `shadows` array of layers (the redundant singular `shadow` is
+  gone — one shadow is a one-element array). The live action catalog
+  (`design.cjs actions`) reflects all of this; old key names are rejected.
+
+## 0.3.0
+
+- **Style keys are CSS-aligned.** The authoring style keys now match React/CSS
+  names. Text weight/style use `fontWeight` (numeric — 400/700) and `fontStyle`
+  (`normal`/`italic`) instead of the old `bold`/`italic` booleans; decoration is
+  `textDecorationLine` (+ `textDecorationColor`/`textDecorationThickness`) instead
+  of `underline`/`strikeThrough`. Element borders on text/image/qr/barcode are
+  `borderWidth`/`borderColor`/`borderStyle` (shapes keep SVG `stroke`); corner
+  rounding adds per-corner `borderTopLeftRadius`…`borderBottomLeftRadius`
+  alongside the `borderRadius` shorthand; padding adds per-side
+  `paddingTop`/`Right`/`Bottom`/`Left`; plus `textShadow`. The live action catalog
+  (`design.cjs actions`) and the design gallery were updated to match — old key
+  names are now rejected by the server.
+
+## 0.2.0
+
+- **Create and author are now separate steps.** `design.cjs create` only
+  allocates a design (name + optional description) and returns a `designId`;
+  it no longer accepts `actions` (the server rejects them). Send your layout
+  as an ordered `actions` batch via `design.cjs patch` against that `designId`.
+  This fixes a duplicate-design bug where a `create` whose initial action batch
+  failed left an empty design behind, and the retry created a second, filled
+  one. A failed `patch` now changes nothing — just retry it against the same
+  `designId`.
+
 ## 0.1.0
 
 - **Font catalog discovery** — new `design.cjs fonts` subcommand
@@ -28,9 +106,43 @@ follows [semantic versioning](https://semver.org); bump `version` in
   are documented as incidental — structure to copy, colors to restyle.
 - Fonts discovery is now lazy: the design-system pairings cover the default
   path; `design.cjs fonts` is for exploring the full catalog.
+- **Author artwork as SVG, not shape collages** — new skill guidance + an
+  `upload {"svg": "<svg…>"}` convenience that uploads inline markup as an
+  `image/svg+xml` asset (no temp file). The invoice exemplar now demonstrates
+  an authored SVG logo mark. File uploads also carry a proper mimetype now.
+- **Image source grammar (server-enforced)** — `data.src` (and page/document
+  `background.image.src`, renamed from `imageRef`) is `assets:<id>`,
+  `data:image/png|jpeg|webp|svg+xml;base64` (large payloads auto-convert to
+  assets), or `https://` (fetched once and frozen into an asset). Anything
+  else is rejected with a teaching error.
 
 ## Unreleased
 
+- **Corner rounding + drop shadows ("popped")** — `borderRadius` now accepts
+  a number or per-corner `[tl, tr, br, bl]` (CSS order) and lands on MORE
+  elements: text/table/qr/barcode/shape in POINTS (image stays PERCENT,
+  tuple form added). New `shadow` bag
+  `{dx, dy, blur, spread (pt), color (#hex), opacity 0..1}` on
+  text/image/qr/barcode/shape(rect+circle)/table — replaced wholesale;
+  defaults are a tasteful lift (dy 2, blur 6, 30% black). The PDF BAKES the
+  shadow (the engine has no CSS box-shadow), pixel-matched to the canvas.
+  Table radius clips fills at the box edge and rounds the outline as a ring
+  for the closed-outline border modes. New TEXT `padding` (pt) — the chip
+  inset: the derived box grows by 2×padding and the wrap width shrinks;
+  pair with `bgColor` + `borderRadius` + `shadow` for badge looks.
+- **Canva-parity table styling** — `borderMode` grows to 8 presets
+  (`inner`, `inner-horizontal`, `vertical`, `inner-vertical` join
+  all/none/horizontal/outer), plus `borderStyle` (solid|dashed|dotted),
+  `tableSpacing` (pt outer gap — the box grows by 2×), and `opacity` (0..1)
+  on the table wire. Cell styles in the `cells` grid now accept
+  `textTransform` (row heights measure the transformed text — lockstep with
+  the canvas), and the cell `letterSpacing` wrap math is now identical on
+  both surfaces (a canvas-side drift was fixed). Merged cells spanning to a
+  table edge now classify as outline edges correctly (fixes missing `outer`
+  borders on merged tables).
+- **QR/Barcode styling** — both gain `opacity` (0..1); rotation now has a
+  canvas handle. (QR `data.margin` and barcode `textMargin` were already on
+  the wire; the editor now exposes them.)
 - **Canva-parity image styling** — images gain `styles.opacity` (0..1),
   `flipH`/`flipV`, a border (`stroke`/`strokeWidth` in pt/`strokeStyle`),
   and `filters` `{brightness, contrast, saturation (0..2), grayscale}` —
