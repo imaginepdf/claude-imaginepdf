@@ -88,6 +88,18 @@ merged per-field, a field set to `null` clears it. `backgroundColor` is a hex or
 gradient; `backgroundImage` is an image src (assets:/data:/https:) sized by
 `backgroundSize` (`cover`/`contain`/`fill`). `add_page` accepts the same keys.
 
+**PAGE SIZE / ORIENTATION:** a new design has ONE portrait A4 page at index 0.
+To make a **landscape** (or custom-size) design, flip that page in place with
+`update_page` as the FIRST action in your batch:
+`{ "type": "update_page", "args": { "page": 0, "orientation": "landscape" } }` —
+this swaps the page to landscape dimensions (≈841.89 × 595.28 pt) with no extra
+or blank page. `update_page` also takes `width`/`height` (points), `name`, and the
+same background longhands; passing `orientation` sets the dimensions to match
+(dimensions are the source of truth). For multi-page docs, `add_page` appends
+(it also accepts `orientation`) and `remove_page` deletes one (the document must
+keep at least one page). Lay out a landscape page across the full width
+(content x: 50→790).
+
 ## Before authoring — read these
 
 1. `node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" actions` — the
@@ -143,7 +155,9 @@ All scripts are invoked as
    blue palette is fine.
 
 2. **Create the design** — this only allocates it and returns a `designId`
-   (a new design starts with one blank A4 page). No actions here.
+   (a new design starts with one blank portrait A4 page). No actions here. For a
+   landscape design, make `update_page { page: 0, orientation: "landscape" }` the
+   first action of your step-3 `patch`.
    ```bash
    node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" create '{"name":"Invoice","description":"Standard invoice"}'
    ```
@@ -171,6 +185,9 @@ All scripts are invoked as
 4. **Refine** with further `patch` calls (e.g. `update_element` to set table
    cells, restyle, or move things). Text re-derives its box when content /
    maxWidth / metric styles change; tables re-derive on any data change.
+   On `update_element`, a table's `data` accepts only `cells/columnWidths/width`
+   — toggle the header via `styles.headerRow` (NOT `data.headerRow`), and remove
+   header shading by clearing the header cells' `backgroundColor` in `data.cells`.
 
 5. **Preview and revise — do this, don't skip it.** Render the page and LOOK at
    it:
@@ -179,11 +196,20 @@ All scripts are invoked as
    ```
    The result has a `localPath` to a PNG — **Read that image**, then critique your
    own layout: alignment, spacing rhythm, contrast, hierarchy, overflow, balance.
-   `patch` to fix what's off and preview again. Iterate until it looks crisp.
+   **If any image area is blank, you left it source-less or its SVG rendered
+   blank — author a proper visible SVG (or a placeholder) for it before moving
+   on.** `patch` to fix what's off and preview again. Iterate until it looks crisp.
 
 6. **Verify** with `get` before handing off.
 
 ## Images and placeholders
+
+**Every image element MUST end up with a concrete, VISIBLE source** — an authored
+SVG, an uploaded asset, or a placeholder. Never leave an image blank, and never
+bind an image as a substitute for giving it a real source (a bound image with no
+useful design-time `data.src` renders as an empty box). The default for a logo /
+brand mark / icon / illustration is: **author a real SVG and set it as a static
+`data.src`** (don't bind it — see Guidance below).
 
 You cannot see the user's local files, and the design references images by an
 `assets:<id>` URN. Three paths:
@@ -200,9 +226,19 @@ You cannot see the user's local files, and the design references images by an
   node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" upload '{"svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\">…</svg>","name":"Logo"}'
   ```
   Use the returned `ref` as the image's `data.src` (the asset is replaceable
-  in place later, exactly like a placeholder). A TINY mark (<2KB) may also go
-  straight into `data.src` as `data:image/svg+xml;base64,…` — the server
-  auto-converts large inline payloads into assets.
+  in place later, exactly like a placeholder). A small mark may also go straight
+  into `data.src` as `data:image/svg+xml;base64,…` — the server converts EVERY
+  inline image payload into an asset, so the design tree and generate payloads
+  only ever carry `assets:` refs, never inline bytes.
+
+  The SVG must actually RENDER — the server rasterizes it and **rejects a blank
+  result**. So: include a `viewBox` (e.g. `viewBox="0 0 64 64"`); put visible
+  geometry INSIDE that box; use explicit colour values on `fill`/`stroke`
+  (`#3B82F6`, not `currentColor` — there's no inherited colour context);
+  self-contained markup only (no external CSS classes, no `<image href>`, no web
+  fonts — convert any text to paths or use plain `<text>` with a generic family).
+  If the upload is rejected as blank, fix the markup and re-upload — don't ship a
+  blank box.
 - **You need an image the user hasn't supplied yet** → mint a placeholder:
   ```bash
   node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" placeholder '{"name":"Company logo","label":"LOGO","width":200,"height":80}'
@@ -228,7 +264,13 @@ You cannot see the user's local files, and the design references images by an
   Update cells later via `update_element` `data.cells`.
 - Make a field fillable with `bind_variable` — the element's `name` becomes the
   variable name (the key the generation step fills), so name elements the way
-  you want the dataset columns named.
+  you want the dataset columns named. Bind ONLY what genuinely varies per record
+  (an invoice number, a customer name, a line-items table). **Don't bind a logo /
+  brand mark / decorative image** — those are constant: author them as a static
+  SVG `data.src` and leave them unbound. If an image truly does vary per record,
+  still give it a real design-time `data.src` (a representative SVG or a
+  placeholder) so the editor, preview, and a single generate are never blank —
+  binding makes the `src` fillable, it doesn't supply one.
 
 When the design looks right, hand off to **`imaginepdf:generate`** to produce the
 PDF (single, or one-per-row from a dataset).

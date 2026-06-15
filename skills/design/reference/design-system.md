@@ -31,6 +31,11 @@ signals are still structure + restraint, with an effect or two for polish:
   background uses `backgroundImage` + `backgroundSize`).
 - **Real artwork is an SVG image asset** (`design.cjs upload {"svg": …}`) —
   never a cluster of shape elements. Shapes build STRUCTURE; images carry ART.
+  Make the SVG actually render: a `viewBox`, visible geometry inside it, explicit
+  `fill`/`stroke` colours (not `currentColor`), self-contained (no external CSS
+  or fonts). The server rejects a blank-rendering SVG — every image must carry a
+  real, visible source, never a blank box. A logo is constant: static `data.src`,
+  not a bound variable.
 - Image polish: `data.crop` to reframe a photo without re-uploading,
   `grayscale: true` + low `opacity` for watermark-style background imagery,
   a hairline border (`borderWidth` 0.75–1pt + muted `borderColor`) to seat photos on white, and

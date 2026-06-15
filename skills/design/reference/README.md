@@ -19,7 +19,13 @@ takes no actions).
   does ONE thing (one element / one binding / one page op). Send an ordered
   `actions` array; it applies sequentially and atomically.
 - **Units:** points (1 inch = 72 pt). Page origin is top-left `(0,0)`.
-  A4 = 595.28 × 841.89 pt. Use ~50 pt margins (content x: 50→545).
+  A4 portrait = 595.28 × 841.89 pt (landscape swaps to 841.89 × 595.28). Use
+  ~50 pt margins (portrait content x: 50→545; landscape x: 50→790).
+- **Page size / orientation:** a new design has one portrait A4 page (index 0).
+  For landscape (or a custom size) send `update_page` first:
+  `{ "type": "update_page", "args": { "page": 0, "orientation": "landscape" } }`
+  (or pass `width`/`height` in pt). `add_page` appends another page,
+  `remove_page` deletes one (≥1 page always kept).
 - **Sizing is derived (never send what the server computes):**
   - text → `position: {x, y, maxWidth?}`. Width/height come from content +
     fontSize + lineHeight. `maxWidth` (pt) pins the box width EXACTLY —
@@ -89,10 +95,17 @@ takes no actions).
   change because a remote image did). Anything else is rejected. Page/document
   backgrounds use FLAT CSS longhands (no nested object) — `backgroundColor`
   (color or gradient), `backgroundImage` (the src, same grammar), `backgroundSize`
-  (cover|contain|fill) — on `add_page` / `set_page_background` / `set_document_background`.
+  (cover|contain|fill) — on `add_page` / `update_page` / `set_page_background` /
+  `set_document_background`.
 - **Element kinds:** `text`, `image` (needs `data.src`), `qr`, `barcode`,
   `shape` (`data.shapeType`: rectangle/circle/line/arrow), `table`
   (`data.rows/columns/columnWidths/width/template/headerRow/headerColumn/cells`).
+- **Table `data` is add-vs-update asymmetric:** `add_element` accepts all of
+  those `data` keys, but `update_element` accepts only `data.cells / columnWidths
+  / width` (the grid). The header flags are STYLES — toggle them after creation
+  via `styles.headerRow` / `styles.headerColumn` (NOT `data.headerRow`).
+  `rows`/`columns`/`template` are add-only; reshape an existing table by
+  resending `data.cells`.
 - **Table styling:** `borderMode` picks which lines draw —
   `all|none|horizontal|outer|inner|inner-horizontal|vertical|inner-vertical`
   — composed with `borderColor`/`borderWidth` (pt)/`borderStyle`
@@ -108,6 +121,11 @@ takes no actions).
   Cell styles in the `cells` grid also accept `textTransform`
   (none|uppercase|lowercase|capitalize — row heights account for the
   transformed text), `letterSpacing` (pt) and `lineHeight`.
+- **Header shading:** `styles.headerRow` only marks the first row as a header
+  (it adds NO fill by itself). A faint header shade comes from the `headerRow`
+  table **template's** header-cell fills (applied at create). To remove it, set
+  those header cells' `backgroundColor` to your page color (or unset it) via
+  `data.cells`, or don't apply the `headerRow` template.
 - **QR/Barcode extras:** both accept `opacity` (0..1), `rotate`,
   `borderRadius` (pt — rounds the code card; modest radii only eat the baked
   quiet zone, oversized ones clip the symbol) and `shadows`. QR
@@ -150,7 +168,11 @@ takes no actions).
   `name` becomes the variable name (the key you pass at generation time); the
   bound field is derived from the element type (text→content, image→src,
   qr/barcode→content, table→cells). So name elements the way you want the
-  dataset columns named, BEFORE binding.
+  dataset columns named, BEFORE binding. Bind only what genuinely varies per
+  record. An IMAGE binds its `src`, so don't bind a logo/brand mark (constant —
+  author it as a static SVG); bind an image only if it really differs per row,
+  and keep a real design-time `data.src` (a representative SVG or placeholder) so
+  it never renders blank when no value is supplied.
 - **Atomicity:** a `patch` call is all-or-nothing — if any action fails, the
   whole call is rejected, nothing is saved, and the error names the failing
   action index (`actions[3] (add_element) failed: …`). A failed `patch` leaves

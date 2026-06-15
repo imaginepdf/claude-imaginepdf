@@ -4,6 +4,46 @@ All notable changes to the ImaginePDF plugin are documented here. The plugin
 follows [semantic versioning](https://semver.org); bump `version` in
 `.claude-plugin/plugin.json` on every release.
 
+## 0.11.0
+
+- **Landscape (and custom-size) designs are now possible.** New `update_page`
+  authoring action edits a page in place — size, orientation, name, or
+  background. A design starts with one portrait A4 page (index 0); send
+  `update_page { page: 0, orientation: "landscape" }` as the first action to flip
+  it to landscape (dimensions swap to ≈841.89 × 595.28 pt) — no appended blank
+  page to clean up. Passing `orientation` sets the dimensions to match
+  (dimensions are the source of truth); `width`/`height` (points) are also
+  accepted. Companion `remove_page` deletes a page (the document always keeps at
+  least one). `add_page` now also folds `orientation` into the new page's
+  dimensions. SKILL + reference docs document the landscape pattern.
+
+## 0.10.0
+
+- **Inline images always become assets — designs (and generate payloads) carry
+  `assets:` refs, never inline bytes.** The server now converts EVERY inline
+  `data:image/…` payload into a workspace asset (previously only SVG and rasters
+  over 128 KB), so a bound image's value is a compact ref instead of the whole
+  base64 blob being re-sent on every generate. SKILL doc updated to match.
+- `generate`/`batch` now drop any inline `data:` image value from the supplied
+  field values before sending — a generate-time image must be an `assets:<id>`
+  ref (upload first), never inline bytes re-sent in the request. (The server also
+  strips inline image values as a last-line guarantee.)
+
+## 0.9.0
+
+- **Images must always carry a real, visible source — never a blank box.** Guidance
+  hardened so the agent authors a proper SVG (or a placeholder) for every image and
+  sets it as a static `data.src`: an SVG needs a `viewBox`, visible geometry inside
+  it, explicit `fill`/`stroke` colours (not `currentColor`), and self-contained
+  markup (no external CSS/fonts). Logos/brand marks stay STATIC — don't
+  `bind_variable` them; bind only images that genuinely vary per record, and even
+  then keep a design-time `data.src` so the editor/preview/single-generate are
+  never blank. The preview self-check now flags blank image areas. (SKILL.md,
+  reference/README.md, design-system.md, BIND_VARIABLE catalog prose.)
+- Server-side guard (ImaginePDF API): an uploaded SVG that rasterizes to a blank
+  (fully transparent) image is now rejected with a teaching error, so a blank
+  "logo" can never be stored and silently render as an empty box.
+
 ## 0.8.0
 
 - **Docs teach the full current capability set.** The hand-written design guidance

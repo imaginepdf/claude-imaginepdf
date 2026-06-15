@@ -54,7 +54,8 @@ the versioned, API-key-only public surface:
   and/or rename/describe. Each action is `{type, args}` and SINGULAR (one
   element / one binding / one page op): `add_element`, `update_element`,
   `remove_element`, `reorder_element`, `bind_variable`, `unbind_variable`,
-  `add_page`, `set_page_background`, `set_document_background`, `set_metadata`.
+  `add_page`, `update_page`, `remove_page`, `set_page_background`,
+  `set_document_background`, `set_metadata`.
   Applied sequentially (`tree + action → tree`), atomically. Text/table sizes
   are DERIVED server-side (text `{x,y,maxWidth?}`, table grid-driven); element
   ids are server-minted — agents address elements by their unique `name`
@@ -105,6 +106,7 @@ claude --plugin-dir "$(pwd)"
 - Do NOT reintroduce granular element/page endpoints or scripts — authoring is
   action-based through `PATCH /api/v1/designs/:id`. The old `element.cjs`/`page.cjs`
   called endpoints that never existed.
+- Do no bump up the version automatically, that will be set before making a release
 - The action catalog is owned server-side and served at `GET /api/v1/actions`
   (via `design.cjs actions`). The plugin's `reference/README.md` is a thin pointer
   to that live catalog — don't hand-maintain a parallel action list here.
