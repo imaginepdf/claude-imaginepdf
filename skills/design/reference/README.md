@@ -21,11 +21,13 @@ takes no actions).
 - **Units:** points (1 inch = 72 pt). Page origin is top-left `(0,0)`.
   A4 portrait = 595.28 × 841.89 pt (landscape swaps to 841.89 × 595.28). Use
   ~50 pt margins (portrait content x: 50→545; landscape x: 50→790).
-- **Page size / orientation:** a new design has one portrait A4 page (index 0).
-  For landscape (or a custom size) send `update_page` first:
-  `{ "type": "update_page", "args": { "page": 0, "orientation": "landscape" } }`
-  (or pass `width`/`height` in pt). `add_page` appends another page,
-  `remove_page` deletes one (≥1 page always kept).
+- **Page size / orientation:** set it at **create** —
+  `create '{"name":"…","size":"A4","orientation":"landscape"}'`. `size` is
+  `A4|A3|A5|Letter|Legal` (default A4); `orientation` is `portrait|landscape`
+  (default portrait). The first page is born at the right dimensions — don't
+  create portrait then flip. To CHANGE an existing design's format, use
+  `update_page` (`{ page: 0, orientation }` / `width` / `height`); `add_page`
+  appends a page, `remove_page` deletes one (≥1 page always kept).
 - **Sizing is derived (never send what the server computes):**
   - text → `position: {x, y, maxWidth?}`. Width/height come from content +
     fontSize + lineHeight. `maxWidth` (pt) pins the box width EXACTLY —

@@ -4,6 +4,20 @@ All notable changes to the ImaginePDF plugin are documented here. The plugin
 follows [semantic versioning](https://semver.org); bump `version` in
 `.claude-plugin/plugin.json` on every release.
 
+## Unreleased
+
+- **Paper size + orientation are set at design CREATE time (the canonical way to
+  make a landscape / A3 / Letter document).** `create` now accepts `size`
+  (`A4|A3|A5|Letter|Legal`, default A4) and `orientation` (`portrait|landscape`,
+  default portrait): `create '{"name":"Cert","size":"A4","orientation":"landscape"}'`.
+  The first page is **born** at the requested dimensions (the server materializes
+  the initial tree at create), so a `get`/`preview` immediately shows the correct
+  page — no portrait-then-flip dance. This supersedes the previous guidance to
+  flip page 0 with `update_page` after create.
+- `update_page` / `remove_page` remain for **editing an existing** design's page
+  (resize / reorient / rename / background / multi-page management) — they are no
+  longer the way to make a new landscape design.
+
 ## 0.11.0
 
 - **Landscape (and custom-size) designs are now possible.** New `update_page`

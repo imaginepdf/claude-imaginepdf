@@ -2,7 +2,7 @@
  * design.cjs — author ImaginePDF designs via the public `/api/v1` surface.
  *
  *   actions                                — list the authoring action catalog
- *   create  '{"name":"Invoice","description":"…"}'   — allocate a design, returns designId
+ *   create  '{"name":"Invoice","size":"A4","orientation":"portrait","description":"…"}' — allocate a design, returns designId
  *   get     '{"designId":"…"}'
  *   list    '{}'
  *   patch   '{"designId":"…","name":"…","description":"…","actions":[{"type":"…","args":{…}}]}'
@@ -11,8 +11,12 @@
  *   upload  '{"file":"/path/logo.png","name":"Logo"}'             — add a new image asset
  *   upload  '{"file":"/path/logo.png","assetId":"<placeholder-id>"}' — replace in place
  *
- * Creation and authoring are SEPARATE: `create` only allocates the design
- * (name + optional description) and returns a `designId`. The `patch`
+ * Creation and authoring are SEPARATE: `create` allocates the design and its
+ * first page — name + optional description + paper format (`size`:
+ * A4|A3|A5|Letter|Legal, default A4; `orientation`: portrait|landscape, default
+ * portrait) — and returns a `designId`. Set `size`/`orientation` here to make a
+ * landscape or larger-format document; the first page is born correct (don't
+ * flip it afterwards). The `patch`
  * subcommand is how a design is built/edited: it sends an ordered batch of
  * ACTIONS (`add_element` / `update_element` / `remove_element` /
  * `reorder_element` / `bind_variable` / `add_page` / …). Each action operates
@@ -52,13 +56,19 @@ async function main() {
       break;
     }
     case 'create': {
-      // Create only ALLOCATES the design (name + optional description) and
-      // returns a designId. Authoring is separate — send your layout as an
-      // action batch via `patch`. The server rejects `actions` on create.
+      // Create ALLOCATES the design + its first page (name + optional
+      // description + paper format) and returns a designId. `size`
+      // (A4|A3|A5|Letter|Legal, default A4) and `orientation`
+      // (portrait|landscape, default portrait) set the first page's dimensions
+      // at birth — this is how you make a landscape/A3/Letter document.
+      // Element authoring is separate — send your layout via `patch`. The
+      // server rejects `actions` on create.
       if (!args.name) throw new Error('name is required');
       const result = await api.post<unknown>('/api/v1/designs', {
         name: args.name,
         ...(args.description !== undefined ? { description: args.description } : {}),
+        ...(args.size !== undefined ? { size: args.size } : {}),
+        ...(args.orientation !== undefined ? { orientation: args.orientation } : {}),
       });
       console.log(JSON.stringify(result));
       break;

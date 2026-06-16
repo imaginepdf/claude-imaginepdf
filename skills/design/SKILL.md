@@ -88,17 +88,16 @@ merged per-field, a field set to `null` clears it. `backgroundColor` is a hex or
 gradient; `backgroundImage` is an image src (assets:/data:/https:) sized by
 `backgroundSize` (`cover`/`contain`/`fill`). `add_page` accepts the same keys.
 
-**PAGE SIZE / ORIENTATION:** a new design has ONE portrait A4 page at index 0.
-To make a **landscape** (or custom-size) design, flip that page in place with
-`update_page` as the FIRST action in your batch:
-`{ "type": "update_page", "args": { "page": 0, "orientation": "landscape" } }` —
-this swaps the page to landscape dimensions (≈841.89 × 595.28 pt) with no extra
-or blank page. `update_page` also takes `width`/`height` (points), `name`, and the
-same background longhands; passing `orientation` sets the dimensions to match
-(dimensions are the source of truth). For multi-page docs, `add_page` appends
-(it also accepts `orientation`) and `remove_page` deletes one (the document must
-keep at least one page). Lay out a landscape page across the full width
-(content x: 50→790).
+**PAGE SIZE / ORIENTATION:** set the paper format when you **create** the design —
+`create '{"name":"…","size":"A4","orientation":"landscape"}'`. `size` is
+`A4|A3|A5|Letter|Legal` (default A4); `orientation` is `portrait|landscape`
+(default portrait). The first page is born at the right dimensions (e.g. A4
+landscape ≈ 841.89 × 595.28 pt) — do NOT create portrait then flip. Lay out a
+landscape page across the full width (content x: 50→790).
+To CHANGE an existing design's format afterwards, use `update_page`
+(`{ page: 0, orientation }` / `width` / `height`); `add_page` appends another
+page (also accepts `orientation`) and `remove_page` deletes one (≥1 page always
+kept).
 
 ## Before authoring — read these
 
@@ -154,12 +153,11 @@ All scripts are invoked as
    by default. Don't ship the plain unstyled default look; a *deliberate*
    blue palette is fine.
 
-2. **Create the design** — this only allocates it and returns a `designId`
-   (a new design starts with one blank portrait A4 page). No actions here. For a
-   landscape design, make `update_page { page: 0, orientation: "landscape" }` the
-   first action of your step-3 `patch`.
+2. **Create the design** — allocates it (and its first page) and returns a
+   `designId`. Pass `size` + `orientation` here to set the paper format up front
+   (default A4 portrait); the first page is born correct. No element actions here.
    ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" create '{"name":"Invoice","description":"Standard invoice"}'
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" create '{"name":"Certificate","size":"A4","orientation":"landscape"}'
    ```
 
 3. **Build it with a first `patch`** — send your whole layout as one ordered
