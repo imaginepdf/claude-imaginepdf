@@ -9,7 +9,8 @@
  * `data` / each `rows[]` entry is keyed by variable NAME (the labels bound via
  * the design `bind_variables` op). `generate` returns a presigned `downloadUrl`;
  * `batch` returns a `jobId` to poll with `batch-status`, then `batch-download`
- * for the zip. Batch requires the workspace's plan to include batch generation.
+ * (which returns a `downloadUrl` for the zip). Batch requires the workspace's
+ * plan to include batch generation.
  */
 
 import { getApiKey, getApiUrl } from './lib/auth.js';
@@ -51,7 +52,7 @@ async function main() {
     case 'generate': {
       if (!args.designId) throw new Error('designId is required');
       const result = await api.post<unknown>(
-        `/api/v1/generate?design=${encodeURIComponent(args.designId)}`,
+        `/api/v1/designs/${encodeURIComponent(args.designId)}/generate`,
         { data: stripInlineImages(args.data || {}) },
       );
       console.log(JSON.stringify(result));
@@ -63,7 +64,7 @@ async function main() {
         throw new Error('rows must be a non-empty array of { variable_name: value } objects');
       }
       const result = await api.post<unknown>(
-        `/api/v1/batch/generate?design=${encodeURIComponent(args.designId)}`,
+        `/api/v1/designs/${encodeURIComponent(args.designId)}/batch`,
         { rows: args.rows.map(stripInlineImages) },
       );
       console.log(JSON.stringify(result));
@@ -72,7 +73,7 @@ async function main() {
     case 'batch-status': {
       if (!args.jobId) throw new Error('jobId is required');
       const result = await api.get<unknown>(
-        `/api/v1/batch/${encodeURIComponent(args.jobId)}/status`,
+        `/api/v1/batches/${encodeURIComponent(args.jobId)}`,
       );
       console.log(JSON.stringify(result));
       break;
@@ -80,7 +81,7 @@ async function main() {
     case 'batch-download': {
       if (!args.jobId) throw new Error('jobId is required');
       const result = await api.get<unknown>(
-        `/api/v1/batch/${encodeURIComponent(args.jobId)}/download`,
+        `/api/v1/batches/${encodeURIComponent(args.jobId)}/download`,
       );
       console.log(JSON.stringify(result));
       break;

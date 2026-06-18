@@ -11,7 +11,7 @@ create or change the design first, use `imaginepdf:design`.
 
 Values (`data` for single, each `rows[]` entry for batch) are keyed by variable
 **name** — the names bound via the design `bind_variables` op (shown in the
-design's API panel). Run `imaginepdf:design`'s `design.cjs get` to see them.
+design's API panel). Run `imaginepdf:design`'s `design.cjs tree` to see them.
 
 ## Single PDF
 

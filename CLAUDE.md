@@ -20,13 +20,13 @@ tasteful layouts; the server owns `pdftreejs` and applies the actions.
 ```
 claude-imaginepdf/
 ├── .claude-plugin/
-│   ├── plugin.json            # manifest (+ userConfig: api_key only)
+│   ├── plugin.json            # manifest (no userConfig — key comes from env)
 │   └── marketplace.json       # GitHub marketplace catalog (this repo)
 ├── src/
-│   ├── design.ts              # actions/create/get/list/patch + preview/placeholder/upload
+│   ├── design.ts              # actions/fonts/create/get/tree/list/patch/update + preview/upload
 │   ├── generate.ts            # render a PDF + batch (generate/batch/batch-status/batch-download)
 │   └── lib/
-│       ├── auth.ts            # resolve API key (userConfig → env); base URL via env fallback
+│       ├── auth.ts            # resolve API key + base URL from IMAGINEPDF_API_KEY/_URL env
 │       └── api-client.ts      # X-API-Key HTTP client (get/post/patch/postForm/putForm/download)
 ├── skills/
 │   ├── design/                # author/edit layout (/imaginepdf:design)
@@ -52,39 +52,35 @@ the versioned, API-key-only public surface:
   made). It does NOT accept element `actions` (sending them is rejected) —
   authoring is a separate concern, see PATCH below.
 - `GET   /api/v1/designs` — list designs
-- `GET   /api/v1/designs/:id` — get a design + tree
-- `PATCH /api/v1/designs/:id` — apply an ordered batch of authoring **actions**
-  and/or rename/describe. Each action is `{type, args}` and SINGULAR (one
-  element / one binding / one page op): `add_element`, `update_element`,
-  `remove_element`, `reorder_element`, `bind_variable`, `unbind_variable`,
-  `add_page`, `update_page`, `remove_page`, `set_page_background`,
-  `set_document_background`, `set_metadata`.
-  Applied sequentially (`tree + action → tree`), atomically. Text/table sizes
-  are DERIVED server-side (text `{x,y,maxWidth?}`, table grid-driven); element
-  ids are server-minted — agents address elements by their unique `name`
+- `GET   /api/v1/designs/:id` — design METADATA (name/description/timestamps; NOT the tree)
+- `GET   /api/v1/designs/:id/tree` — the full design tree as RAW JSON (unwrapped)
+- `PATCH /api/v1/designs/:id` — rename / re-describe (metadata only; never the tree)
+- `PATCH /api/v1/designs/:id/tree` — apply an ordered batch of authoring **actions**.
+  Each action is `{type, args}` and SINGULAR (one element / one binding / one page
+  op): `add_element`, `update_element`, `remove_element`, `reorder_element`,
+  `bind_variable`, `unbind_variable`, `add_page`, `update_page`, `remove_page`,
+  `set_page_background`, `set_document_background`, `set_metadata`. Applied
+  sequentially (`tree + action → tree`), atomically. Text/table sizes are DERIVED
+  server-side (text `{x,y,maxWidth?}`, table grid-driven); element ids are
+  server-minted — agents address elements by their unique `name`
 - `GET   /api/v1/actions` — the authoring action catalog (types + args shapes)
-- `GET   /api/v1/preview?design=:id&page=0` — render a page to a PNG (no credit)
-- `POST  /api/v1/assets` — upload an image asset (multipart)
-- `POST  /api/v1/assets/placeholder` — mint a labeled placeholder asset
-- `PUT   /api/v1/assets/:id/content` — replace an asset's bytes in place (ref unchanged)
-- `POST  /api/v1/generate?design=:id` — render a PDF, returns a presigned URL
-- `POST  /api/v1/batch/generate?design=:id` — one PDF per dataset row (plan-gated)
-- `GET   /api/v1/batch/:jobId/{status,download}` — poll + fetch the zip
+- `GET   /api/v1/designs/:id/preview?page=0` — render a page to a PNG (no credit)
+- `POST  /api/v1/uploads` — upload an image (multipart, ≤1 MB) → `uploads:<id>`
+- `POST  /api/v1/designs/:id/generate` — render a PDF, returns a presigned `downloadUrl`
+- `POST  /api/v1/designs/:id/batch` — one PDF per row (plan-gated) → `jobId`
+- `GET   /api/v1/batches/:jobId` — poll the batch job · `GET …/download` — fetch the zip
 
 The authoring actions are defined and executed server-side by the ImaginePDF API
-(the authority); the plugin is a thin caller. Authoring, preview, and asset
+(the authority); the plugin is a thin caller. Authoring, preview, and image
 upload are free; only generation (single and per batch row) costs a credit.
 
 ## Config
 
-Uses Claude Code plugin `userConfig` (set via `/plugin`):
-- `api_key` (sensitive → OS keychain) — workspace key `pc_live_…`. The only
-  config field a user sees.
-
-`auth.ts` reads `CLAUDE_PLUGIN_OPTION_API_KEY` first, then falls back to
-`IMAGINEPDF_API_KEY` for local dev. The base URL is NOT a user-facing config —
-it defaults to `https://api.imaginepdf.com`; for local dev export
-`IMAGINEPDF_API_URL=http://localhost:3100`.
+`auth.ts` resolves the workspace key from the `IMAGINEPDF_API_KEY` env var —
+exported BEFORE launching Claude (a running session won't pick up a later
+export). There is no `userConfig` / `/plugin` keychain prompt; the env var is the
+only path. The base URL defaults to `https://api.imaginepdf.com`; for local dev
+export `IMAGINEPDF_API_URL=http://localhost:3100`.
 
 ## Distribution
 
@@ -107,7 +103,7 @@ claude --plugin-dir "$(pwd)"
 ## Notes / rules
 
 - Do NOT reintroduce granular element/page endpoints or scripts — authoring is
-  action-based through `PATCH /api/v1/designs/:id`. The old `element.cjs`/`page.cjs`
+  action-based through `PATCH /api/v1/designs/:id/tree`. The old `element.cjs`/`page.cjs`
   called endpoints that never existed.
 - Do no bump up the version automatically, that will be set before making a release
 - The action catalog is owned server-side and served at `GET /api/v1/actions`

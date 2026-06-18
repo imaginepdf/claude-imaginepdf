@@ -35,6 +35,31 @@ async function request<T>(
 }
 
 /**
+ * RAW GET — returns the response body as-is, WITHOUT unwrapping the
+ * `{status,data,error}` envelope. The design-tree endpoint
+ * (`GET /api/v1/designs/:id/tree`) returns the raw tree on success; errors still
+ * come back enveloped, so we surface `error.message` on a non-2xx.
+ */
+async function requestRaw<T>(apiKey: string, apiUrl: string, path: string): Promise<T> {
+  const response = await fetch(`${apiUrl}${path}`, {
+    method: 'GET',
+    headers: { 'X-API-Key': apiKey },
+  });
+  let json: unknown;
+  try {
+    json = await response.json();
+  } catch {
+    throw new Error(`API returned non-JSON response: HTTP ${response.status} ${response.statusText}`);
+  }
+  if (!response.ok) {
+    const msg =
+      (json as ApiResponse<T>)?.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+    throw new Error(msg);
+  }
+  return json as T;
+}
+
+/**
  * Multipart request (file upload). Content-Type is intentionally NOT set —
  * fetch derives it (with the boundary) from the FormData body.
  */
@@ -87,12 +112,11 @@ async function download(url: string, destPath: string): Promise<void> {
 export function createApiClient(apiKey: string, apiUrl: string) {
   return {
     get: <T>(path: string) => request<T>(apiKey, apiUrl, 'GET', path),
+    getRaw: <T>(path: string) => requestRaw<T>(apiKey, apiUrl, path),
     post: <T>(path: string, body?: unknown) => request<T>(apiKey, apiUrl, 'POST', path, body),
     patch: <T>(path: string, body?: unknown) => request<T>(apiKey, apiUrl, 'PATCH', path, body),
     postForm: <T>(path: string, form: FormData) =>
       requestForm<T>(apiKey, apiUrl, 'POST', path, form),
-    putForm: <T>(path: string, form: FormData) =>
-      requestForm<T>(apiKey, apiUrl, 'PUT', path, form),
     download,
   };
 }

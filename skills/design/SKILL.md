@@ -122,11 +122,12 @@ All scripts are invoked as
 | --- | --- |
 | `design.cjs actions` | live authoring action catalog |
 | `design.cjs create '{"name":"…","description":"…"}'` | allocate an empty design, returns `designId` |
-| `design.cjs patch '{"designId":"…","actions":[…]}'` | apply an action batch / rename / describe |
-| `design.cjs get '{"designId":"…"}'` | full tree + bound variables |
+| `design.cjs patch '{"designId":"…","actions":[…]}'` | apply an authoring action batch to the tree |
+| `design.cjs update '{"designId":"…","name":"…"}'` | rename / re-describe (metadata only) |
+| `design.cjs get '{"designId":"…"}'` | design metadata (name/description/timestamps) |
+| `design.cjs tree '{"designId":"…"}'` | the full design tree (raw JSON) — inspect before editing |
 | `design.cjs preview '{"designId":"…","page":0}'` | render a page to a PNG you can read |
-| `design.cjs placeholder '{"name":"Logo","label":"LOGO"}'` | mint a replaceable placeholder image |
-| `design.cjs upload '{"file":"/path.png"}'` | add an image asset (or replace one in place) |
+| `design.cjs upload '{"file":"/path.png"}'` (or `'{"svg":"<svg …>"}'`) | upload an image (≤1 MB) → `uploads:<id>` |
 
 ## Workflow
 
@@ -195,25 +196,26 @@ All scripts are invoked as
    The result has a `localPath` to a PNG — **Read that image**, then critique your
    own layout: alignment, spacing rhythm, contrast, hierarchy, overflow, balance.
    **If any image area is blank, you left it source-less or its SVG rendered
-   blank — author a proper visible SVG (or a placeholder) for it before moving
+   blank — author a proper visible SVG for it before moving
    on.** `patch` to fix what's off and preview again. Iterate until it looks crisp.
 
-6. **Verify** with `get` before handing off.
+6. **Verify** with `tree` (and a final `preview`) before handing off.
 
-## Images and placeholders
+## Images
 
 **Every image element MUST end up with a concrete, VISIBLE source** — an authored
-SVG, an uploaded asset, or a placeholder. Never leave an image blank, and never
+SVG or an uploaded image. Never leave an image blank, and never
 bind an image as a substitute for giving it a real source (a bound image with no
 useful design-time `data.src` renders as an empty box). The default for a logo /
 brand mark / icon / illustration is: **author a real SVG and set it as a static
 `data.src`** (don't bind it — see Guidance below).
 
 You cannot see the user's local files, and the design references images by an
-`assets:<id>` URN. Three paths:
+`assets:<id>` (a user-library asset) or `uploads:<id>` (what `upload` mints —
+agent images never touch the user's asset library) URN. Two paths:
 
 - **The user gave you an image path** → `design.cjs upload '{"file":"/path/logo.png","name":"Logo"}'`.
-  Use the returned `ref` (`assets:<id>`) as an image element's `data.src`.
+  Use the returned `ref` (`uploads:<id>`) as an image element's `data.src`.
 - **Authoring artwork (logos, icons, illustrations) — write SVG.**
   NEVER compose a logo or icon out of shape elements — shapes are layout
   furniture (bands, rules, panels), not artwork; a shape collage pollutes the
@@ -223,11 +225,10 @@ You cannot see the user's local files, and the design references images by an
   ```bash
   node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" upload '{"svg":"<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\">…</svg>","name":"Logo"}'
   ```
-  Use the returned `ref` as the image's `data.src` (the asset is replaceable
-  in place later, exactly like a placeholder). A small mark may also go straight
-  into `data.src` as `data:image/svg+xml;base64,…` — the server converts EVERY
-  inline image payload into an asset, so the design tree and generate payloads
-  only ever carry `assets:` refs, never inline bytes.
+  Use the returned `ref` as the image's `data.src`. A small mark may also go
+  straight into `data.src` as `data:image/svg+xml;base64,…` — the server uploads
+  EVERY inline image payload into the `uploads` collection, so the design tree and
+  generate payloads only ever carry `uploads:`/`assets:` refs, never inline bytes.
 
   The SVG must actually RENDER — the server rasterizes it and **rejects a blank
   result**. So: include a `viewBox` (e.g. `viewBox="0 0 64 64"`); put visible
@@ -237,15 +238,12 @@ You cannot see the user's local files, and the design references images by an
   fonts — convert any text to paths or use plain `<text>` with a generic family).
   If the upload is rejected as blank, fix the markup and re-upload — don't ship a
   blank box.
-- **You need an image the user hasn't supplied yet** → mint a placeholder:
-  ```bash
-  node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" placeholder '{"name":"Company logo","label":"LOGO","width":200,"height":80}'
-  ```
-  Use the returned `ref` as the image's `data.src`. The placeholder is a real,
-  rendered labeled box — a PDF generated now shows the box, never a blank gap.
-  Tell the user they can drop in the real image any time with:
-  `design.cjs upload '{"file":"/path/logo.png","assetId":"<the-placeholder-id>"}'`
-  — this swaps the bytes **in place**, so the design needs no change.
+- **You need an image the user hasn't supplied yet** → author a representative
+  SVG (a real mark, icon, or simple wordmark) and use it as the `data.src` — a
+  PDF generated now shows real artwork, never a blank gap. If the user later
+  supplies their own image, swap it in one step: `design.cjs upload` the new file,
+  then point the element's `data.src` at the returned `uploads:<id>` with an
+  `update_element` action.
 
 ## Guidance
 
@@ -266,8 +264,8 @@ You cannot see the user's local files, and the design references images by an
   (an invoice number, a customer name, a line-items table). **Don't bind a logo /
   brand mark / decorative image** — those are constant: author them as a static
   SVG `data.src` and leave them unbound. If an image truly does vary per record,
-  still give it a real design-time `data.src` (a representative SVG or a
-  placeholder) so the editor, preview, and a single generate are never blank —
+  still give it a real design-time `data.src` (a representative SVG) so the
+  editor, preview, and a single generate are never blank —
   binding makes the `src` fillable, it doesn't supply one.
 
 When the design looks right, hand off to **`imaginepdf:generate`** to produce the

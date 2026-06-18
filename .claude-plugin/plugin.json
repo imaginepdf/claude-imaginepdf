@@ -16,14 +16,5 @@
     "generation",
     "template",
     "imaginepdf"
-  ],
-  "userConfig": {
-    "api_key": {
-      "type": "string",
-      "title": "ImaginePDF API key",
-      "description": "Workspace key (pc_live_\u2026) from the ImaginePDF dashboard \u2192 Settings \u2192 API Keys.",
-      "sensitive": true,
-      "required": true
-    }
-  }
+  ]
 }

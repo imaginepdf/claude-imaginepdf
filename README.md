@@ -39,49 +39,40 @@ claude --plugin-dir /path/to/claude-imaginepdf
 
 ## Setup
 
-Provide your workspace API key (`pc_live_…`, from the dashboard →
-**Settings → API Keys**) one of two ways:
-
-**Export it before you start Claude** — the simplest path:
+Export your workspace API key (`pc_live_…`, from the dashboard →
+**Settings → API Keys**) **before** you launch Claude — a session that's already
+running won't pick up a later `export`:
 
 ```bash
 export IMAGINEPDF_API_KEY=pc_live_...
 claude
 ```
 
-Set it in the shell **before** launching Claude — a session that's already
-running won't pick up a later `export`. Add it to your shell profile (or a
-project `.env` you source) to keep it around.
-
-**Or store it in your OS keychain** via `/plugin` → **ImaginePDF** →
-**API key** — set once, persists across sessions.
-
+Add it to your shell profile (or a project `.env` you source) to keep it around.
 For local dev against a non-production API, also export
 `IMAGINEPDF_API_URL=http://localhost:3100`.
 
 ## Usage
 
-Ask Claude to create a document:
+Just ask Claude in plain English:
 
 ```
-Create an invoice for Acme Corp, invoice #1042, dated today, for 3 items:
-Widget A ($50 x 2), Widget B ($75 x 1), Widget C ($30 x 5). Add a QR code
-linking to the payment page, and make the customer name a template variable.
+Create a detailed invoice for Acme Corp, invoice #1042, dated today, for 3
+items: Widget A ($50 x 2), Widget B ($75 x 1), Widget C ($30 x 5). Add a QR
+code linking to the payment page, and make the customer name a template variable.
 ```
 
-Or invoke a skill directly:
-
-```
-/imaginepdf:create Generate a certificate of completion for "John Doe"
-```
+Claude designs the layout, checks its own preview, and hands back the PDF —
+saved to your workspace, ready for the editor or the API.
 
 ## Skills
 
-| Skill | Purpose |
+Claude picks the right skill up from your request — you don't invoke them by hand:
+
+| Skill | What it does |
 | --- | --- |
-| `imaginepdf:create` | Entry point — orchestrates authoring + generation |
-| `imaginepdf:design-authoring` | Create/edit a design via tree ops (+ reference docs) |
-| `imaginepdf:pdf-generation` | Render a design to a PDF, fill template variables |
+| `imaginepdf:design` | Author or edit a layout — elements, styling, template variables |
+| `imaginepdf:generate` | Render the design to a PDF, single or batch from a dataset |
 
 ## Architecture
 

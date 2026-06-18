@@ -6,6 +6,12 @@ follows [semantic versioning](https://semver.org); bump `version` in
 
 ## Unreleased
 
+- **The API key is now set via the `IMAGINEPDF_API_KEY` environment variable
+  only.** Export it before launching Claude (`export IMAGINEPDF_API_KEY=pc_live_...`
+  then `claude` — a running session won't pick up a later export). The plugin's
+  `userConfig` / `/plugin` keychain prompt has been removed, so installs no longer
+  ask for a key up front. `IMAGINEPDF_API_URL` still overrides the base URL for
+  local dev.
 - **Paper size + orientation are set at design CREATE time (the canonical way to
   make a landscape / A3 / Letter document).** `create` now accepts `size`
   (`A4|A3|A5|Letter|Legal`, default A4) and `orientation` (`portrait|landscape`,

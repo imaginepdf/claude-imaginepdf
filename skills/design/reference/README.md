@@ -90,11 +90,12 @@ takes no actions).
 - **Paint order:** action order — later elements draw on top. Add background
   shapes before the text on them; fix mistakes with
   `reorder_element {name, to: front|back|forward|backward|index}`.
-- **Image sources (strict grammar):** `data.src` is `assets:<id>` (from
-  `upload`/`placeholder`), `data:image/png|jpeg|webp|svg+xml;base64,…`
-  (inline; payloads >128KB are auto-converted to assets), or `https://…`
-  (fetched ONCE server-side and frozen into an asset — the PDF can never
-  change because a remote image did). Anything else is rejected. Page/document
+- **Image sources (strict grammar):** `data.src` is `uploads:<id>` (from
+  `upload` — agent images, kept out of the user's asset library),
+  `assets:<id>` (a user-library asset),
+  `data:image/png|jpeg|webp|svg+xml;base64,…` (inline; auto-uploaded to
+  `uploads`), or `https://…` (fetched ONCE server-side and frozen — the PDF can
+  never change because a remote image did). Anything else is rejected. Page/document
   backgrounds use FLAT CSS longhands (no nested object) — `backgroundColor`
   (color or gradient), `backgroundImage` (the src, same grammar), `backgroundSize`
   (cover|contain|fill) — on `add_page` / `update_page` / `set_page_background` /
@@ -173,7 +174,7 @@ takes no actions).
   dataset columns named, BEFORE binding. Bind only what genuinely varies per
   record. An IMAGE binds its `src`, so don't bind a logo/brand mark (constant —
   author it as a static SVG); bind an image only if it really differs per row,
-  and keep a real design-time `data.src` (a representative SVG or placeholder) so
+  and keep a real design-time `data.src` (a representative SVG) so
   it never renders blank when no value is supplied.
 - **Atomicity:** a `patch` call is all-or-nothing — if any action fails, the
   whole call is rejected, nothing is saved, and the error names the failing
