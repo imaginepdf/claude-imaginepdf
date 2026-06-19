@@ -176,6 +176,16 @@ takes no actions).
   author it as a static SVG); bind an image only if it really differs per row,
   and keep a real design-time `data.src` (a representative SVG) so
   it never renders blank when no value is supplied.
+- **Inline placeholders:** to mix static and dynamic text in ONE element, type
+  `{{token}}` placeholders right in a text element's `content` (or a table
+  cell), then `bind_variable` the element as usual. At generation time that
+  variable takes an OBJECT of token values (e.g.
+  `"greeting":{"first_name":"Jane"}`) instead of a single string — each
+  `{{token}}` is replaced in place. Token names are letters, digits, and
+  underscore (no spaces, periods, or hyphens); `page`/`pages` are reserved.
+  You cannot style individual tokens (style runs
+  don't cross the API). Prefer this over splitting a sentence into several
+  positioned text boxes.
 - **Atomicity:** a `patch` call is all-or-nothing — if any action fails, the
   whole call is rejected, nothing is saved, and the error names the failing
   action index (`actions[3] (add_element) failed: …`). A failed `patch` leaves

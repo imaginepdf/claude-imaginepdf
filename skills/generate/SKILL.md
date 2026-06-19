@@ -26,6 +26,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/generate.cjs" generate '{
   "designId":"<id>",
   "data":{
     "customer_name":"Acme Corp",
+    "greeting":{"first_name":"Jane","plan":"Pro"},
     "items_table":[["Item","Qty","Price"],["Widget","5","$50.00"]]
   }
 }'
@@ -38,6 +39,14 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/generate.cjs" generate '{
   isn't an array, or more than 500 rows) FAILS the generation with a clear
   400 (single) / per-row reason (batch) — it never silently renders the
   design's placeholder cells. A `null` cell renders as an empty cell.
+- **Inline placeholders:** if a text element (or table cell) embeds `{{token}}`
+  placeholders, pass that variable an OBJECT mapping each token to its value —
+  e.g. `"greeting":{"first_name":"Jane","plan":"Pro"}`. Each `{{token}}` is
+  replaced in place and the surrounding static text is kept; unfilled tokens
+  render empty. Token names are letters, digits, and underscore (no spaces,
+  periods, or hyphens); `page`/`pages` are reserved. A variable with NO `{{}}`
+  tokens still takes a string (or
+  `string[][]` for a whole table). You cannot style individual tokens.
 - A value's key must match a bound variable's name exactly. Unknown keys are
   ignored; the field renders its static content.
 
