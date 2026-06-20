@@ -9,12 +9,14 @@ follows [semantic versioning](https://semver.org); bump `version` in
 - **Inline placeholders (`{{token}}`).** A text element or table cell can now
   embed `{{token}}` placeholders to mix static and dynamic text in one element
   (e.g. `Dear {{first_name}}, your {{plan}} plan renews on {{date}}`). Bind the
-  element as usual; at generation time pass that variable an OBJECT mapping each
-  token to its value (`"greeting":{"first_name":"Jane","plan":"Pro"}`) instead
-  of a whole-field string. Each token is replaced in place, surrounding text is
-  kept, and unfilled tokens render empty. A variable with no `{{}}` tokens still
-  takes a string (or `string[][]` for a whole table). Token names are letters,
-  digits, and underscore; `page`/`pages` are reserved.
+  element as usual; at generation time give each token its own compound key
+  `variableName::token` (`"greeting::first_name":"Jane"`, `"greeting::plan":"Pro"`)
+  alongside the whole-field keys. Each token is replaced in place, surrounding
+  text is kept, and unfilled tokens render empty. A variable with no `{{}}`
+  tokens still takes a string (or `string[][]` for a whole table). Token names
+  are letters, digits, and underscore; `page`/`pages` are reserved; a variable
+  name must not contain `::`. (A legacy nested object —
+  `"greeting":{"first_name":"Jane"}` — is still accepted.)
 - **The API key is now set via the `IMAGINEPDF_API_KEY` environment variable
   only.** Export it before launching Claude (`export IMAGINEPDF_API_KEY=pc_live_...`
   then `claude` — a running session won't pick up a later export). The plugin's

@@ -26,7 +26,8 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/generate.cjs" generate '{
   "designId":"<id>",
   "data":{
     "customer_name":"Acme Corp",
-    "greeting":{"first_name":"Jane","plan":"Pro"},
+    "greeting::first_name":"Jane",
+    "greeting::plan":"Pro",
     "items_table":[["Item","Qty","Price"],["Widget","5","$50.00"]]
   }
 }'
@@ -40,15 +41,18 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/generate.cjs" generate '{
   400 (single) / per-row reason (batch) — it never silently renders the
   design's placeholder cells. A `null` cell renders as an empty cell.
 - **Inline placeholders:** if a text element (or table cell) embeds `{{token}}`
-  placeholders, pass that variable an OBJECT mapping each token to its value —
-  e.g. `"greeting":{"first_name":"Jane","plan":"Pro"}`. Each `{{token}}` is
-  replaced in place and the surrounding static text is kept; unfilled tokens
+  placeholders, give each token its own compound key `variableName::token` —
+  e.g. `"greeting::first_name":"Jane","greeting::plan":"Pro"`. Each `{{token}}`
+  is replaced in place and the surrounding static text is kept; unfilled tokens
   render empty. Token names are letters, digits, and underscore (no spaces,
   periods, or hyphens); `page`/`pages` are reserved. A variable with NO `{{}}`
-  tokens still takes a string (or
-  `string[][]` for a whole table). You cannot style individual tokens.
-- A value's key must match a bound variable's name exactly. Unknown keys are
-  ignored; the field renders its static content.
+  tokens still takes a string (or `string[][]` for a whole table). You cannot
+  style individual tokens. (A legacy nested object —
+  `"greeting":{"first_name":"Jane"}` — is still accepted, but the `::` form is
+  canonical.)
+- A whole-field key must match a bound variable's name exactly, and a token key
+  is that name plus `::token` (a variable name must not contain `::`). Unknown
+  keys are ignored; the field renders its static content.
 
 Returns `{ designId, filename, downloadUrl, expiresIn, status }`. Give the user
 the `downloadUrl` — a presigned link that expires in about an hour. One credit
@@ -56,8 +60,9 @@ per PDF.
 
 ## Batch (one PDF per row of a dataset)
 
-`rows` is an array of objects, each keyed by variable name — one PDF per row.
-Requires the workspace's plan to include batch generation.
+`rows` is an array of objects, each keyed the same way as `data` above
+(`variableName`, `variableName::token` for inline placeholders) — one PDF per
+row. Requires the workspace's plan to include batch generation.
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/scripts/generate.cjs" batch '{
