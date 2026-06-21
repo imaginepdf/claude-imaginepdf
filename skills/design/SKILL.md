@@ -7,8 +7,8 @@ allowed-tools: Bash(node *), Read
 # ImaginePDF — Design
 
 Creating a design and authoring it are TWO separate steps. First `create` the
-design — that only allocates it (name + optional description) and returns a
-`designId`. Then build it by sending **actions** to `patch`. Each action is
+design — that only allocates it (name + optional description + optional prompt)
+and returns a `designId`. Then build it by sending **actions** to `patch`. Each action is
 `{ type, args }` and does ONE thing — add one element, update one element, bind
 one variable. The server (pdftreejs — the action authority) folds your batch
 over the design tree one action at a time (`tree + action → tree`) and persists
@@ -121,10 +121,10 @@ All scripts are invoked as
 | Subcommand | What it does |
 | --- | --- |
 | `design.cjs actions` | live authoring action catalog |
-| `design.cjs create '{"name":"…","description":"…"}'` | allocate an empty design, returns `designId` |
+| `design.cjs create '{"name":"…","description":"…","prompt":"…"}'` | allocate an empty design, returns `designId` |
 | `design.cjs patch '{"designId":"…","actions":[…]}'` | apply an authoring action batch to the tree |
-| `design.cjs update '{"designId":"…","name":"…"}'` | rename / re-describe (metadata only) |
-| `design.cjs get '{"designId":"…"}'` | design metadata (name/description/timestamps) |
+| `design.cjs update '{"designId":"…","name":"…","prompt":"…"}'` | rename / re-describe / re-prompt (metadata only) |
+| `design.cjs get '{"designId":"…"}'` | design metadata (name/description/prompt/timestamps) |
 | `design.cjs tree '{"designId":"…"}'` | the full design tree (raw JSON) — inspect before editing |
 | `design.cjs preview '{"designId":"…","page":0}'` | render a page to a PNG you can read |
 | `design.cjs upload '{"file":"/path.png"}'` (or `'{"svg":"<svg …>"}'`) | upload an image (≤1 MB) → `uploads:<id>` |
@@ -156,9 +156,15 @@ All scripts are invoked as
 
 2. **Create the design** — allocates it (and its first page) and returns a
    `designId`. Pass `size` + `orientation` here to set the paper format up front
-   (default A4 portrait); the first page is born correct. No element actions here.
+   (default A4 portrait); the first page is born correct. Set a short
+   `description` too — it's stored on the design and pre-fills the
+   template-creation modal if the design is later saved as a template. Also pass
+   `prompt`: the natural-language request that drove this design (typically the
+   user's own wording). It's stored on the design and shown alongside the
+   template in the library when published — so include it whenever you're
+   authoring from a user request. No element actions here.
    ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" create '{"name":"Certificate","size":"A4","orientation":"landscape"}'
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/design.cjs" create '{"name":"Certificate","description":"Course completion certificate","prompt":"Make a course-completion certificate with gold accents and a formal serif title","size":"A4","orientation":"landscape"}'
    ```
 
 3. **Build it with a first `patch`** — send your whole layout as one ordered
@@ -267,6 +273,27 @@ agent images never touch the user's asset library) URN. Two paths:
   still give it a real design-time `data.src` (a representative SVG) so the
   editor, preview, and a single generate are never blank —
   binding makes the `src` fillable, it doesn't supply one.
+- **Inline `{{token}}` placeholders — prefer them for fixed-layout docs.** Two
+  ways to make a field fillable, and the choice matters for who fills it later:
+  - **Whole-field / whole-grid bind** — author content, `bind_variable` the
+    element, and the WHOLE element is replaced at generation (a text string, or a
+    table's entire 2-D grid). Use this for **variable-length repeating data** —
+    a line-items table whose row count differs per record (dataset / batch). The
+    grid auto-grows to the supplied rows.
+  - **Inline `{{token}}` placeholders** — type `{{token}}` markers right inside a
+    text element's `content` OR specific TABLE CELLS, then `bind_variable` the
+    element as usual. Each token becomes its OWN named fill field
+    (`variableName::token`) and is replaced in place; surrounding static text and
+    the surrounding cells are kept; unfilled tokens render empty. Token names are
+    letters/digits/underscore (`page`/`pages` reserved). Use this for
+    **fixed-layout single documents** — an invoice, a payslip, a certificate —
+    where the structure is constant and you want each value to be its own labeled
+    field: a fixed set of line-item rows (`{{item1_desc}}`, `{{item1_qty}}`, …), a
+    totals box (`Subtotal {{subtotal}}` / `Total {{total}}`), or a sentence mixing
+    static + dynamic text (`Issued to {{recipient}} on {{date}}`). The invoice
+    gallery exemplar uses this for its line-items table — copy that shape. This is
+    also what the public ImaginePDF "create" maker pages render the fill form
+    from, so meaningful token names become the form's field labels.
 
 When the design looks right, hand off to **`imaginepdf:generate`** to produce the
 PDF (single, or one-per-row from a dataset).

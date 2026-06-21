@@ -3,12 +3,12 @@
  *
  *   actions                                — list the authoring action catalog
  *   fonts                                  — list the font catalog
- *   create  '{"name":"Invoice","size":"A4","orientation":"portrait","description":"…"}' — allocate a design, returns designId
- *   get     '{"designId":"…"}'             — design METADATA (name/description/timestamps; NOT the tree)
+ *   create  '{"name":"Invoice","size":"A4","orientation":"portrait","description":"…","prompt":"…"}' — allocate a design, returns designId
+ *   get     '{"designId":"…"}'             — design METADATA (name/description/prompt/timestamps; NOT the tree)
  *   tree    '{"designId":"…"}'             — the full design tree (raw JSON) — inspect before editing
  *   list    '{}'
  *   patch   '{"designId":"…","actions":[{"type":"…","args":{…}}]}' — apply an authoring actions batch
- *   update  '{"designId":"…","name":"…","description":"…"}'        — rename / re-describe (metadata only)
+ *   update  '{"designId":"…","name":"…","description":"…","prompt":"…"}' — rename / re-describe / re-prompt (metadata only)
  *   preview '{"designId":"…","page":0}'    — render a page to a PNG you can read
  *   upload  '{"file":"/path/logo.png","name":"Logo"}'  — upload an image (≤1 MB) → uploads:<id>
  *   upload  '{"svg":"<svg …>","name":"Logo"}'          — upload authored SVG markup → uploads:<id>
@@ -64,16 +64,19 @@ async function main() {
     }
     case 'create': {
       // Create ALLOCATES the design + its first page (name + optional
-      // description + paper format) and returns a designId. `size`
-      // (A4|A3|A5|Letter|Legal, default A4) and `orientation`
+      // description + optional prompt + paper format) and returns a designId.
+      // `size` (A4|A3|A5|Letter|Legal, default A4) and `orientation`
       // (portrait|landscape, default portrait) set the first page's dimensions
       // at birth — this is how you make a landscape/A3/Letter document.
-      // Element authoring is separate — send your layout via `patch`. The
-      // server rejects `actions` on create.
+      // `prompt` records the natural-language request that drove this design;
+      // it's stored on the design and shown with the template if it's later
+      // published. Element authoring is separate — send your layout via
+      // `patch`. The server rejects `actions` on create.
       if (!args.name) throw new Error('name is required');
       const result = await api.post<unknown>('/api/v1/designs', {
         name: args.name,
         ...(args.description !== undefined ? { description: args.description } : {}),
+        ...(args.prompt !== undefined ? { prompt: args.prompt } : {}),
         ...(args.size !== undefined ? { size: args.size } : {}),
         ...(args.orientation !== undefined ? { orientation: args.orientation } : {}),
       });
@@ -113,12 +116,14 @@ async function main() {
       break;
     }
     case 'update': {
-      // Rename / re-describe the design (metadata only — never touches the tree).
+      // Rename / re-describe / re-prompt the design (metadata only — never
+      // touches the tree).
       const body: Record<string, unknown> = {};
       if (args.name !== undefined) body.name = args.name;
       if (args.description !== undefined) body.description = args.description;
+      if (args.prompt !== undefined) body.prompt = args.prompt;
       if (Object.keys(body).length === 0) {
-        throw new Error('provide at least one of: name, description');
+        throw new Error('provide at least one of: name, description, prompt');
       }
       const result = await api.patch<unknown>(`/api/v1/designs/${designId()}`, body);
       console.log(JSON.stringify(result));

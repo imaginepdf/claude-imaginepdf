@@ -320,22 +320,22 @@
               "Amount"
             ],
             [
-              "Software consultancy \u2014 May 2026",
-              "1",
-              "$5,000.00",
-              "$5,000.00"
+              "{{item1_desc}}",
+              "{{item1_qty}}",
+              "{{item1_rate}}",
+              "{{item1_amount}}"
             ],
             [
-              "",
-              "",
-              "",
-              ""
+              "{{item2_desc}}",
+              "{{item2_qty}}",
+              "{{item2_rate}}",
+              "{{item2_amount}}"
             ],
             [
-              "",
-              "",
-              "",
-              ""
+              "{{item3_desc}}",
+              "{{item3_qty}}",
+              "{{item3_rate}}",
+              "{{item3_amount}}"
             ]
           ]
         }
