@@ -25,9 +25,18 @@ takes no actions).
   `create '{"name":"…","size":"A4","orientation":"landscape"}'`. `size` is
   `A4|A3|A5|Letter|Legal` (default A4); `orientation` is `portrait|landscape`
   (default portrait). The first page is born at the right dimensions — don't
-  create portrait then flip. To CHANGE an existing design's format, use
-  `update_page` (`{ page: 0, orientation }` / `width` / `height`); `add_page`
-  appends a page, `remove_page` deletes one (≥1 page always kept).
+  create portrait then flip. For a non-paper format, pass a custom size in
+  POINTS instead: `create '{"name":"Ticket","width":660,"height":360}'` (taken
+  literally; mutually exclusive with `size`, orientation ignored). To CHANGE an
+  existing design's format, use `update_page` (`{ page: 0, orientation }` /
+  `width` / `height`); `add_page` appends a page, `remove_page` deletes one
+  (≥1 page always kept).
+- **Multi-page / two-sided:** keep both sides of a card and every page of a
+  multi-page doc in ONE design (front+back ID cards/badges, booklets, multi-page
+  contracts). `add_page` appends a page; `add_element` targets a page with
+  `"page": <index>` (0-based; omit ⇒ page 0). Preview each page with
+  `preview '{"designId":"…","page":1}'` — it renders exactly that page. See the
+  `id_card` gallery exemplar.
 - **Sizing is derived (never send what the server computes):**
   - text → `position: {x, y, maxWidth?}`. Width/height come from content +
     fontSize + lineHeight. `maxWidth` (pt) pins the box width EXACTLY —

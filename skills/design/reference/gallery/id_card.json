@@ -1,0 +1,40 @@
+{
+  "_note": "Exemplar: a TWO-PAGE, two-sided employee ID card (front = page 0, back = page 1) in ONE design — this is the pattern for ANY two-sided/multi-page document (badges, booklets, multi-page contracts); never split the sides into separate designs. Standard CR80 card = 243 × 153 pt (3.375 × 2.125 in), landscape. The Teal/Slate palette is INCIDENTAL — restyle to the palette chosen in the style-intent step unless the user asked for this look. Use `name` for `design.cjs create` to get a designId, then send `actions` as the first `design.cjs patch`. KEY MOVES: (1) `update_page {page:0,width:243,height:153}` sizes the front (or just `create` with `width`/`height`); (2) front elements omit `page` (they land on page 0); (3) `add_page {width:243,height:153}` appends the back; (4) back elements carry `\"page\": 1`. Preview EACH side: `preview {page:0}` then `preview {page:1}`. The photo is a shape placeholder — for a real photo, add an `image` element with a concrete `data.src` (or bind it). `id_no` (front text) and `id_barcode` (back barcode) are SEPARATE variables for the same ID — fill both with the same string. Bound elements carry the variable name as their element name. Adapt copy/variables; preview and revise.",
+  "name": "Employee ID Card",
+  "actions": [
+    { "type": "update_page", "args": { "page": 0, "width": 243, "height": 153 } },
+
+    { "type": "add_element", "args": { "type": "shape", "name": "band", "position": { "x": 0, "y": 0, "w": 243, "h": 30 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#0F766E" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "org", "position": { "x": 14, "y": 9 }, "data": { "content": "NORTHWIND LABS" }, "styles": { "fontFamily": "Poppins", "fontSize": 11, "fontWeight": 700, "color": "#FFFFFF", "letterSpacing": 0.5, "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "badge_tag", "position": { "x": 143, "y": 12, "maxWidth": 86 }, "data": { "content": "STAFF ID" }, "styles": { "fontFamily": "Inter", "fontSize": 8, "fontWeight": 700, "color": "#99F6E4", "letterSpacing": 1, "textAlign": "right" } } },
+
+    { "type": "add_element", "args": { "type": "shape", "name": "photo_frame", "position": { "x": 14, "y": 44, "w": 58, "h": 74 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#F1F5F9", "stroke": "#CBD5E1", "strokeWidth": 1, "borderRadius": 4 } } },
+    { "type": "add_element", "args": { "type": "text", "name": "photo_label", "position": { "x": 14, "y": 77, "maxWidth": 58 }, "data": { "content": "PHOTO" }, "styles": { "fontFamily": "Inter", "fontSize": 7, "fontWeight": 700, "color": "#94A3B8", "letterSpacing": 1, "textAlign": "center" } } },
+
+    { "type": "add_element", "args": { "type": "text", "name": "holder_name", "position": { "x": 84, "y": 46, "maxWidth": 145 }, "data": { "content": "Priya Ramakrishnan" }, "styles": { "fontFamily": "Poppins", "fontSize": 13, "fontWeight": 700, "color": "#0F172A", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "role", "position": { "x": 84, "y": 66, "maxWidth": 145 }, "data": { "content": "Senior Engineer" }, "styles": { "fontFamily": "Inter", "fontSize": 9, "color": "#64748B", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "shape", "name": "divider", "position": { "x": 84, "y": 83, "w": 145, "h": 1 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#E2E8F0" } } },
+
+    { "type": "add_element", "args": { "type": "text", "name": "id_label", "position": { "x": 84, "y": 91 }, "data": { "content": "ID NO." }, "styles": { "fontFamily": "Inter", "fontSize": 7, "fontWeight": 700, "color": "#94A3B8", "letterSpacing": 0.8, "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "id_no", "position": { "x": 84, "y": 100 }, "data": { "content": "NW-2026-0471" }, "styles": { "fontFamily": "Inter", "fontSize": 10, "fontWeight": 700, "color": "#0F172A", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "dept_label", "position": { "x": 162, "y": 91 }, "data": { "content": "DEPT" }, "styles": { "fontFamily": "Inter", "fontSize": 7, "fontWeight": 700, "color": "#94A3B8", "letterSpacing": 0.8, "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "department", "position": { "x": 162, "y": 100 }, "data": { "content": "R&D" }, "styles": { "fontFamily": "Inter", "fontSize": 10, "fontWeight": 700, "color": "#0F172A", "textAlign": "left" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "valid_thru", "position": { "x": 84, "y": 120 }, "data": { "content": "Valid thru 12/2027" }, "styles": { "fontFamily": "Inter", "fontSize": 8, "color": "#64748B", "textAlign": "left" } } },
+
+    { "type": "add_page", "args": { "width": 243, "height": 153 } },
+
+    { "type": "add_element", "args": { "type": "shape", "name": "back_band", "page": 1, "position": { "x": 0, "y": 0, "w": 243, "h": 30 }, "data": { "shapeType": "rectangle" }, "styles": { "fill": "#0F766E" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "back_title", "page": 1, "position": { "x": 14, "y": 11 }, "data": { "content": "ACCESS & VERIFICATION" }, "styles": { "fontFamily": "Inter", "fontSize": 9, "fontWeight": 700, "color": "#FFFFFF", "letterSpacing": 1, "textAlign": "left" } } },
+
+    { "type": "add_element", "args": { "type": "barcode", "name": "id_barcode", "page": 1, "position": { "x": 41, "y": 46, "w": 161, "h": 44 }, "data": { "content": "NW-2026-0471", "format": "CODE128" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "scan_caption", "page": 1, "position": { "x": 21, "y": 96, "maxWidth": 201 }, "data": { "content": "Scan to verify credentials" }, "styles": { "fontFamily": "Inter", "fontSize": 8, "color": "#64748B", "textAlign": "center" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "terms", "page": 1, "position": { "x": 18, "y": 112, "maxWidth": 207 }, "data": { "content": "Property of Northwind Labs · non-transferable · must be returned on request." }, "styles": { "fontFamily": "Inter", "fontSize": 7, "color": "#94A3B8", "lineHeight": 1.4, "textAlign": "center" } } },
+    { "type": "add_element", "args": { "type": "text", "name": "found_line", "page": 1, "position": { "x": 18, "y": 134, "maxWidth": 207 }, "data": { "content": "If found, return to security@northwind.example" }, "styles": { "fontFamily": "Inter", "fontSize": 7, "color": "#94A3B8", "textAlign": "center" } } },
+
+    { "type": "bind_variable", "args": { "name": "holder_name" } },
+    { "type": "bind_variable", "args": { "name": "role" } },
+    { "type": "bind_variable", "args": { "name": "id_no" } },
+    { "type": "bind_variable", "args": { "name": "department" } },
+    { "type": "bind_variable", "args": { "name": "id_barcode" } }
+  ]
+}

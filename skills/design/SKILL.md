@@ -1,6 +1,6 @@
 ---
 name: design
-description: Design a PDF document with ImaginePDF — invoices, receipts, certificates, reports, letters, or any custom layout. Author a design as positioned elements (text, tables, images, shapes, QR codes, barcodes), style it into something crisp and modern, bind template variables, and preview it. Use whenever the task is to create or change a document's content or layout. To produce the final PDF (single or from a dataset), hand off to `imaginepdf:generate`.
+description: Design a PDF document with ImaginePDF — invoices, receipts, certificates, reports, letters, two-sided ID cards / badges, or any custom layout (single- or multi-page). Author a design as positioned elements (text, tables, images, shapes, QR codes, barcodes), style it into something crisp and modern, bind template variables, and preview it. Use whenever the task is to create or change a document's content or layout. To produce the final PDF (single or from a dataset), hand off to `imaginepdf:generate`.
 allowed-tools: Bash(node *), Read
 ---
 
@@ -94,10 +94,24 @@ gradient; `backgroundImage` is an image src (assets:/data:/https:) sized by
 (default portrait). The first page is born at the right dimensions (e.g. A4
 landscape ≈ 841.89 × 595.28 pt) — do NOT create portrait then flip. Lay out a
 landscape page across the full width (content x: 50→790).
+For a NON-paper format (a ticket, badge, social card…) pass a custom size in
+POINTS instead: `create '{"name":"Ticket","width":660,"height":360}'`. Custom
+dims are taken literally — mutually exclusive with `size` (sending both is
+rejected) and `orientation` is ignored for them.
 To CHANGE an existing design's format afterwards, use `update_page`
 (`{ page: 0, orientation }` / `width` / `height`); `add_page` appends another
 page (also accepts `orientation`) and `remove_page` deletes one (≥1 page always
 kept).
+
+**MULTI-PAGE / TWO-SIDED:** keep both sides of a card and every page of a
+multi-page document in ONE design — don't split them across designs. `add_page`
+appends a page; an `add_element` action places onto a specific page via
+`"page": <index>` (0-based; omit it and the element lands on page 0). Use ONE
+multi-page design for ID cards / badges (front + back), booklets, and multi-page
+contracts/reports; reach for SEPARATE designs only for genuinely independent
+documents. Preview any page with `preview '{"designId":"…","page":1}'` — preview
+renders exactly that page, so verify EACH side. The `id_card` gallery exemplar
+is a worked 2-page front/back layout.
 
 ## Before authoring — read these
 
@@ -109,9 +123,9 @@ kept).
    type pairings, spacing, and composition patterns. Read this so the output is
    distinctive and deliberate, not the plain unstyled default.
 4. **`${CLAUDE_PLUGIN_ROOT}/skills/design/reference/gallery/`** — curated example
-   designs (invoice, receipt, certificate, report, letter) as ready-to-send
-   `actions` arrays. Start from the closest exemplar and adapt it — do not build
-   from a blank page.
+   designs (invoice, receipt, certificate, report, letter, plus the 2-page
+   `id_card` front/back) as ready-to-send `actions` arrays. Start from the
+   closest exemplar and adapt it — do not build from a blank page.
 
 ## Scripts
 
@@ -204,6 +218,8 @@ All scripts are invoked as
    **If any image area is blank, you left it source-less or its SVG rendered
    blank — author a proper visible SVG for it before moving
    on.** `patch` to fix what's off and preview again. Iterate until it looks crisp.
+For a multi-page design, preview EACH page by index
+(`'{"designId":"<id>","page":1}'`, 0-based) — verify every side, not just the front.
 
 6. **Verify** with `tree` (and a final `preview`) before handing off.
 

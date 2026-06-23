@@ -4,6 +4,7 @@
  *   actions                                — list the authoring action catalog
  *   fonts                                  — list the font catalog
  *   create  '{"name":"Invoice","size":"A4","orientation":"portrait","description":"…","prompt":"…"}' — allocate a design, returns designId
+ *           (or a custom page size in POINTS: '{"name":"Ticket","width":660,"height":360}')
  *   get     '{"designId":"…"}'             — design METADATA (name/description/prompt/timestamps; NOT the tree)
  *   tree    '{"designId":"…"}'             — the full design tree (raw JSON) — inspect before editing
  *   list    '{}'
@@ -18,7 +19,9 @@
  * A4|A3|A5|Letter|Legal, default A4; `orientation`: portrait|landscape, default
  * portrait) — and returns a `designId`. Set `size`/`orientation` here to make a
  * landscape or larger-format document; the first page is born correct (don't
- * flip it afterwards). `create` does NOT accept actions.
+ * flip it afterwards). For a non-paper format, pass a custom `width`+`height` in
+ * POINTS instead (taken literally; mutually exclusive with `size`, and
+ * `orientation` is ignored for custom dims). `create` does NOT accept actions.
  *
  * `patch` is how a design is built/edited: it sends an ordered batch of ACTIONS
  * (`add_element` / `update_element` / `remove_element` / `reorder_element` /
@@ -67,7 +70,9 @@ async function main() {
       // description + optional prompt + paper format) and returns a designId.
       // `size` (A4|A3|A5|Letter|Legal, default A4) and `orientation`
       // (portrait|landscape, default portrait) set the first page's dimensions
-      // at birth — this is how you make a landscape/A3/Letter document.
+      // at birth — this is how you make a landscape/A3/Letter document. For a
+      // non-paper format pass a custom `width`+`height` in POINTS instead (taken
+      // literally; mutually exclusive with `size`, orientation ignored).
       // `prompt` records the natural-language request that drove this design;
       // it's stored on the design and shown with the template if it's later
       // published. Element authoring is separate — send your layout via
@@ -79,6 +84,8 @@ async function main() {
         ...(args.prompt !== undefined ? { prompt: args.prompt } : {}),
         ...(args.size !== undefined ? { size: args.size } : {}),
         ...(args.orientation !== undefined ? { orientation: args.orientation } : {}),
+        ...(args.width !== undefined ? { width: args.width } : {}),
+        ...(args.height !== undefined ? { height: args.height } : {}),
       });
       console.log(JSON.stringify(result));
       break;

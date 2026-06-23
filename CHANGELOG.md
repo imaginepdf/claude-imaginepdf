@@ -6,6 +6,12 @@ follows [semantic versioning](https://semver.org); bump `version` in
 
 ## Unreleased
 
+- **Custom page size at create.** `create` now accepts a custom first-page size
+  in POINTS — `create '{"name":"Ticket","width":660,"height":360}'` — for
+  non-paper formats (tickets, badges, social cards). The dims are taken
+  literally; they are mutually exclusive with the named `size` (sending both is
+  rejected) and `orientation` is ignored for them. The named `size`/`orientation`
+  path is unchanged.
 - **Inline placeholders (`{{token}}`).** A text element or table cell can now
   embed `{{token}}` placeholders to mix static and dynamic text in one element
   (e.g. `Dear {{first_name}}, your {{plan}} plan renews on {{date}}`). Bind the

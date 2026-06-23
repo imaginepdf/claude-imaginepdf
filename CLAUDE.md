@@ -47,10 +47,12 @@ the versioned, API-key-only public surface:
 
 - `POST  /api/v1/designs` — create a design (name + optional description +
   paper format `size` (A4|A3|A5|Letter|Legal, default A4) + `orientation`
-  (portrait|landscape, default portrait) → `designId`). The first page is
-  materialized at create with those dimensions (how a landscape/A3 design is
-  made). It does NOT accept element `actions` (sending them is rejected) —
-  authoring is a separate concern, see PATCH below.
+  (portrait|landscape, default portrait), OR a custom `width`+`height` in
+  POINTS → `designId`). Custom dims are literal and mutually exclusive with
+  `size` (orientation ignored for them). The first page is materialized at
+  create with those dimensions (how a landscape/A3/custom design is made). It
+  does NOT accept element `actions` (sending them is rejected) — authoring is a
+  separate concern, see PATCH below.
 - `GET   /api/v1/designs` — list designs
 - `GET   /api/v1/designs/:id` — design METADATA (name/description/timestamps; NOT the tree)
 - `GET   /api/v1/designs/:id/tree` — the full design tree as RAW JSON (unwrapped)
