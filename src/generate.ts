@@ -1,8 +1,8 @@
 /**
  * generate.cjs — render PDFs from an ImaginePDF design.
  *
- *   generate       '{"designId":"…","data":{"<variable_name>":"<value>"}}'
- *   batch          '{"designId":"…","rows":[{"<variable_name>":"<value>"}, …]}'
+ *   generate       '{"designId":"…","data":{"<variable_name>":"<value>"},"pdfProfile":"pdf-a"}'
+ *   batch          '{"designId":"…","rows":[{"<variable_name>":"<value>"}, …],"pdfProfile":"accessible"}'
  *   batch-status   '{"jobId":"…"}'
  *   batch-download '{"jobId":"…"}'
  *
@@ -11,6 +11,10 @@
  * `batch` returns a `jobId` to poll with `batch-status`, then `batch-download`
  * (which returns a `downloadUrl` for the zip). Batch requires the workspace's
  * plan to include batch generation.
+ *
+ * `pdfProfile` (optional, both commands): 'accessible' = tagged PDF/UA-1
+ * (screen-reader structure), 'pdf-a' = archival PDF/A-3b (also tagged).
+ * Omit for standard output.
  */
 
 import { getApiKey, getApiUrl } from './lib/auth.js';
@@ -53,7 +57,10 @@ async function main() {
       if (!args.designId) throw new Error('designId is required');
       const result = await api.post<unknown>(
         `/api/v1/designs/${encodeURIComponent(args.designId)}/generate`,
-        { data: stripInlineImages(args.data || {}) },
+        {
+          data: stripInlineImages(args.data || {}),
+          ...(args.pdfProfile ? { pdfProfile: args.pdfProfile } : {}),
+        },
       );
       console.log(JSON.stringify(result));
       break;
@@ -65,7 +72,10 @@ async function main() {
       }
       const result = await api.post<unknown>(
         `/api/v1/designs/${encodeURIComponent(args.designId)}/batch`,
-        { rows: args.rows.map(stripInlineImages) },
+        {
+          rows: args.rows.map(stripInlineImages),
+          ...(args.pdfProfile ? { pdfProfile: args.pdfProfile } : {}),
+        },
       );
       console.log(JSON.stringify(result));
       break;

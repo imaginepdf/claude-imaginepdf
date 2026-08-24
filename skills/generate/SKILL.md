@@ -58,6 +58,15 @@ Returns `{ designId, filename, downloadUrl, expiresIn, status }`. Give the user
 the `downloadUrl` — a presigned link that expires in about an hour. One credit
 per PDF.
 
+**Compliance output (`pdfProfile`, optional — single AND batch):** pass
+`"pdfProfile":"accessible"` for a tagged PDF/UA-1 (screen-reader structure,
+reading order, alt text) or `"pdfProfile":"pdf-a"` for archival PDF/A-3b (also
+tagged). Omit for standard output. Use it when the user mentions accessibility,
+screen readers, WCAG/EAA/Section 508 compliance, or archival/long-term storage
+requirements. Same credit cost. Pick the profile by the VALIDATOR the user
+cares about: accessibility checkers (axesCheck, PAC, veraPDF ua1) need
+`accessible`; `pdf-a` validates as PDF/A, not PDF/UA.
+
 ## Batch (one PDF per row of a dataset)
 
 `rows` is an array of objects, each keyed the same way as `data` above
