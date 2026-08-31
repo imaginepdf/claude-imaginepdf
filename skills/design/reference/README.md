@@ -110,7 +110,17 @@ takes no actions).
   (cover|contain|fill) — on `add_page` / `update_page` / `set_page_background` /
   `set_document_background`.
 - **Element kinds:** `text`, `image` (needs `data.src`), `qr`, `barcode`,
-  `shape` (`data.shapeType`: rectangle/circle/line/arrow), `table`
+  `shape` (`data.shapeType`: rectangle/circle/line/arrow/triangle/diamond/
+  pentagon/hexagon/star — for line/arrow the stroke runs along the box's
+  LONGER axis, so a tall thin box like `{w: 1, h: 184}` is a vertical divider;
+  arrows take `styles.arrowHead: start|end|both`; `data.adjust` tunes geometry:
+  star `{points: 3..12, innerRatio: 0.1..0.9}` (default 5-point at 0.4), arrow
+  `{headSize: 1..10}` — head = max(8, headSize × strokeWidth) pt, default 4;
+  `data.content` puts a text label centered inside a CLOSED shape — fixed-box:
+  it wraps inside the shape and clips on overflow, never resizing the shape;
+  style it with `styles.fontFamily/fontSize/fontWeight/fontStyle/color/
+  textAlign/lineHeight/letterSpacing` — great for badges and pills),
+  `table`
   (`data.rows/columns/columnWidths/width/template/headerRow/headerColumn/cells`).
 - **Table `data` is add-vs-update asymmetric:** `add_element` accepts all of
   those `data` keys, but `update_element` accepts only `data.cells / columnWidths
@@ -141,7 +151,9 @@ takes no actions).
 - **QR/Barcode extras:** both accept `opacity` (0..1), `rotate`,
   `borderRadius` (pt — rounds the code card; modest radii only eat the baked
   quiet zone, oversized ones clip the symbol) and `shadows`. QR
-  `data.margin` is the quiet zone in MODULES (default 4); barcode
+  `data.margin` is the quiet zone in MODULES (default 0 — the code renders
+  flush to its box, Canva-style; set 4 when the code sits against dark
+  fills/borders or tight print layouts — the QR-spec zone); barcode
   `textMargin` (pt) is the gap between bars and caption.
 - **Image styling:** `styles` supports `objectFit`, `borderRadius` (PERCENT 0–100;
   50 on a square = circle; all corners, or per-corner
@@ -164,7 +176,7 @@ takes no actions).
   free and parametric: bars + quiet zones fill the width (more characters =
   denser bars; keep the element wide enough to scan), and bars fill the
   height above the caption. QR `data` also
-  takes `errorCorrectionLevel` (L/M/Q/H) and `margin` (quiet-zone modules).
+  takes `errorCorrectionLevel` (L/M/Q/H) and `margin` (quiet-zone modules, default 0).
 - **Table cells (strict):** `data.cells` = a 2-D array. Each cell is EITHER a
   plain string (→ a text cell) OR a canonical envelope `{ type, data, styles? }`
   where `data.content` is a string for text/qr/barcode and `data.src` is a
